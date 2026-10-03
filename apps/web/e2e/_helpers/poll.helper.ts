@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Browser, type Page } from '@playwright/test';
 
 /**
  * Creates a draft poll with two questions through the form and returns its
@@ -11,7 +11,8 @@ export async function createDraftPoll(
   {
     plannedN = 50,
     attentionCheck = false,
-  }: { plannedN?: number; attentionCheck?: boolean } = {},
+    excludeFailed = false,
+  }: { plannedN?: number; attentionCheck?: boolean; excludeFailed?: boolean } = {},
 ): Promise<string> {
   await page.goto('/polls/new');
   await page.getByLabel('Title *').fill(title);
@@ -41,6 +42,9 @@ export async function createDraftPoll(
     await page
       .getByRole('radio', { name: 'Option 2 is the correct answer' })
       .check();
+    if (excludeFailed) {
+      await page.getByLabel('Exclude answers that fail the attention check').check();
+    }
   }
 
   await page.getByRole('button', { name: 'Save as draft' }).click();
@@ -64,4 +68,26 @@ export async function closePoll(page: Page): Promise<void> {
     .getByRole('button', { name: 'Close poll' })
     .click();
   await expect(page.getByText(/Closed on/)).toBeVisible();
+}
+
+/**
+ * Answers the two-question poll from createDraftPoll once per entry, each
+ * time as a new participant (a fresh browser context, so the "already
+ * answered" receipt doesn't get in the way).
+ */
+export async function answerPoll(
+  browser: Browser,
+  pollId: string,
+  answers: ReadonlyArray<readonly [drink: string, check: string]>,
+): Promise<void> {
+  for (const [drink, check] of answers) {
+    const participant = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await participant.newPage();
+    await page.goto(`/p/${pollId}`);
+    await page.getByRole('radio', { name: drink }).click();
+    await page.getByRole('radio', { name: check }).click();
+    await page.getByRole('button', { name: 'Submit answers' }).click();
+    await expect(page.getByRole('status')).toContainText('Thank you.');
+    await participant.close();
+  }
 }
