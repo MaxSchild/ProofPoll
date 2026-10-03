@@ -26,7 +26,7 @@ test.describe.parallel('Anonymous user public pages', () => {
     await page.goto('/login');
 
     await expect(page).toHaveURL('/login');
-    await expect(page.getByText('Login to NextBase')).toBeVisible();
+    await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
   });
 
@@ -34,7 +34,7 @@ test.describe.parallel('Anonymous user public pages', () => {
     await page.goto('/sign-up');
 
     await expect(page).toHaveURL('/sign-up');
-    await expect(page.getByText('Register to NextBase')).toBeVisible();
+    await expect(page.getByText('Create your AllCounted account')).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
   });
 });
