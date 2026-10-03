@@ -16,6 +16,7 @@ import {
   newClientId,
   saveReceipt,
   type Answers,
+  type StoredReceipt,
 } from '@/utils/answers';
 import type { PollQuestion } from '@/utils/polls';
 import { Receipt } from './receipt';
@@ -34,7 +35,7 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
   const [answers, setAnswers] = useState<Answers>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState<{ seq: number; createdAt: string } | null>(null);
+  const [receipt, setReceipt] = useState<StoredReceipt | null>(null);
   const [alreadyAnswered, setAlreadyAnswered] = useState(false);
   // Outside lab mode the device's saved receipt is only known on the client;
   // until it has been read, a placeholder avoids flashing the form.
@@ -90,7 +91,12 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
         clientId: clientIdRef.current,
       });
       if (result?.data) {
-        const saved = { seq: result.data.seq, createdAt: result.data.createdAt };
+        const saved: StoredReceipt = {
+          seq: result.data.seq,
+          createdAt: result.data.createdAt,
+          recordTx: result.data.record.tx,
+          recordStatus: result.data.record.status,
+        };
         // Lab computers are shared, so they are never locked.
         if (!lab) saveReceipt(poll.id, saved);
         setReceipt(saved);
@@ -131,6 +137,8 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
       <Receipt
         seq={receipt.seq}
         createdAt={receipt.createdAt}
+        recordTx={receipt.recordTx ?? null}
+        recordStatus={receipt.recordStatus ?? null}
         alreadyAnswered={alreadyAnswered}
         lab={lab}
         onNextParticipant={nextParticipant}
@@ -187,7 +195,7 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
               aria-describedby={complete ? undefined : 'submit-hint'}
             >
               {submitting ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}
-              Submit answers
+              {submitting ? 'Saving and recording…' : 'Submit answers'}
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">Anonymous. No sign-in needed.</p>

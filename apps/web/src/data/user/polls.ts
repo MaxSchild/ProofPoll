@@ -1,5 +1,6 @@
 'use server';
 
+import { recordMissing, recordPlan } from '@/data/admin/records';
 import type { Json } from '@/lib/database.types';
 import { authActionClient } from '@/lib/safe-action';
 import { createSupabaseClient } from '@/supabase-clients/server';
@@ -99,9 +100,40 @@ async function setStatus(id: string, status: 'open' | 'closed') {
   return { id };
 }
 
+// Opening fixes the plan, so that is when its fingerprint goes on Solana.
+// The poll is open either way; a failed record can be retried from the
+// Record tab.
 export const openPollAction = authActionClient
   .schema(pollIdSchema)
-  .action(async ({ parsedInput: { id } }) => setStatus(id, 'open'));
+  .action(async ({ parsedInput: { id } }) => {
+    await setStatus(id, 'open');
+    const record = await recordPlan(id);
+    revalidatePoll(id);
+    return { id, record };
+  });
+
+/**
+ * Records whatever of the user's poll isn't on Solana yet. Reading the poll
+ * through the user's own client proves ownership (row-level security) before
+ * the service-role writes start.
+ */
+export const recordMissingAction = authActionClient
+  .schema(pollIdSchema)
+  .action(async ({ parsedInput: { id } }) => {
+    const supabase = await createSupabaseClient();
+    const { data, error } = await supabase
+      .from('polls')
+      .select('id, status')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw toUserError(error, "The records couldn't be retried.");
+    if (!data) throw new UserFacingError('This poll could not be found.');
+    if (data.status === 'draft') throw new UserFacingError('A draft has nothing to record yet.');
+    const result = await recordMissing(id);
+    revalidatePoll(id);
+    revalidatePath(`/s/${id}`);
+    return result;
+  });
 
 export const closePollAction = authActionClient
   .schema(pollIdSchema)
