@@ -24,7 +24,10 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
-const navigation = [{ href: '/#how-it-works', label: 'How it works' }];
+const navigation = [
+  { href: '/#how-it-works', label: 'How it works' },
+  { href: '/verify', label: 'Verify a paper' },
+];
 
 export default function Navbar() {
   return (
