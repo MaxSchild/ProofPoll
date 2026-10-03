@@ -3,16 +3,130 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never;
+      poll_attention_checks: {
+        Row: {
+          correct_option: string;
+          poll_id: string;
+          question_id: string;
+        };
+        Insert: {
+          correct_option: string;
+          poll_id: string;
+          question_id: string;
+        };
+        Update: {
+          correct_option?: string;
+          poll_id?: string;
+          question_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "poll_attention_checks_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: true;
+            referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      polls: {
+        Row: {
+          authors: NonNullable<Json>;
+          closed_at: string | null;
+          created_at: string;
+          description: string;
+          exclusion_rules: NonNullable<Json>;
+          id: string;
+          opened_at: string | null;
+          owner_id: string;
+          planned_n: number | null;
+          questions: NonNullable<Json>;
+          status: Database["public"]["Enums"]["poll_status"];
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          authors?: NonNullable<Json>;
+          closed_at?: string | null;
+          created_at?: string;
+          description?: string;
+          exclusion_rules?: NonNullable<Json>;
+          id?: string;
+          opened_at?: string | null;
+          owner_id?: string;
+          planned_n?: number | null;
+          questions: NonNullable<Json>;
+          status?: Database["public"]["Enums"]["poll_status"];
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          authors?: NonNullable<Json>;
+          closed_at?: string | null;
+          created_at?: string;
+          description?: string;
+          exclusion_rules?: NonNullable<Json>;
+          id?: string;
+          opened_at?: string | null;
+          owner_id?: string;
+          planned_n?: number | null;
+          questions?: NonNullable<Json>;
+          status?: Database["public"]["Enums"]["poll_status"];
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      responses: {
+        Row: {
+          answers: NonNullable<Json>;
+          created_at: string;
+          id: string;
+          poll_id: string;
+          seq: number;
+        };
+        Insert: {
+          answers: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          poll_id: string;
+          seq: number;
+        };
+        Update: {
+          answers?: NonNullable<Json>;
+          created_at?: string;
+          id?: string;
+          poll_id?: string;
+          seq?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "responses_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      poll_response_count: { Args: { p_poll_id: string }; Returns: number };
+      submit_response: {
+        Args: { p_answers: Json; p_poll_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          seq: number;
+        }[];
+      };
+      validate_poll_questions: { Args: { p_questions: Json }; Returns: undefined };
     };
     Enums: {
-      [_ in never]: never;
+      poll_status: "draft" | "open" | "closed";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -127,6 +241,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      poll_status: ["draft", "open", "closed"],
+    },
   },
 } as const;
