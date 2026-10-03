@@ -137,6 +137,40 @@ test.describe('Logged-in user verifies a paper against the record', () => {
     await reviewer.close();
   });
 
+  test('a rejected DOI is not proposed again, and publishing by DOI asks first', async ({
+    page,
+  }) => {
+    const pollId = await createDraftPoll(page, `DOI poll ${Date.now()}`);
+    await openPoll(page);
+    await closePoll(page);
+    await page.goto('/my-papers/new');
+    await page.getByLabel('Title *').fill('DOI paper');
+    await page.locator(`#poll-${pollId}`).click();
+    await page.getByRole('button', { name: 'Create paper' }).click();
+    await expect(page).toHaveURL(/\/my-papers\/[A-Za-z0-9]{8}$/);
+    await page.getByLabel('Start review round 1').setInputFiles(manuscript('doi.pdf', `doi ${Date.now()}`));
+    await confirmRound(page, 1);
+
+    await page.getByRole('button', { name: 'Run detection now' }).click();
+    await page.getByRole('button', { name: 'Not my paper' }).click();
+    await page.getByRole('button', { name: 'Run detection now' }).click();
+    await expect(page.getByText('No published version found yet.')).toBeVisible();
+    await expect(page.getByText('Is this your paper?')).toHaveCount(0);
+
+    const dialog = page.getByRole('alertdialog');
+    await page.getByLabel('Attach the DOI and publish').fill('not-a-doi');
+    await page.getByRole('button', { name: 'Publish' }).click();
+    await dialog.getByRole('button', { name: 'Publish' }).click();
+    await expect(dialog.getByText('Enter a DOI like 10.1287/mnsc.2026.01234')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Not yet' }).click();
+
+    await page.getByLabel('Attach the DOI and publish').fill('https://doi.org/10.1287/MNSC.2026.999');
+    await page.getByRole('button', { name: 'Publish' }).click();
+    await expect(dialog.getByRole('heading')).toHaveText('Publish with DOI 10.1287/MNSC.2026.999?');
+    await dialog.getByRole('button', { name: 'Publish' }).click();
+    await expect(page.getByRole('link', { name: '10.1287/mnsc.2026.999' })).toBeVisible();
+  });
+
   test('a signed-out visitor cannot see a draft paper', async ({ page, browser }) => {
     const pollId = await createDraftPoll(page, `Private paper poll ${Date.now()}`);
     await openPoll(page);
