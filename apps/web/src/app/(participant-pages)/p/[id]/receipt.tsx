@@ -58,8 +58,8 @@ export function Receipt({
           Thank you.
         </h1>
         <p className="text-base">
-          Your answer is <span className="font-mono">#{seq}</span> in this poll, saved at{' '}
-          <time dateTime={createdAt} className="font-mono">
+          Your answer is <span className="whitespace-nowrap font-mono">#{seq}</span> in this poll, saved at{' '}
+          <time dateTime={createdAt} className="whitespace-nowrap font-mono">
             {formatLocalTime(createdAt)}
           </time>
           .

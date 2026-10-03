@@ -207,18 +207,25 @@ function QuestionField({
         {question.options.map((option, index) => {
           const id = `${question.id}-option-${index}`;
           return (
-            <Label
+            // The radio is a sibling of the label, not a child: Radix renders a
+            // hidden form input next to it, and a click on that input inside a
+            // label would re-select the previous option.
+            <div
               key={id}
-              htmlFor={id}
-              className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-lg border border-input px-4 py-3 text-base font-normal leading-snug has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:ring-1 has-[[data-state=checked]]:ring-primary"
+              className="relative flex min-h-14 w-full items-center gap-3 rounded-lg border border-input px-4 text-base has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring has-[:focus-visible]:ring-offset-2 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-accent has-[[data-state=checked]]:ring-1 has-[[data-state=checked]]:ring-primary"
             >
               <RadioGroupItem
                 id={id}
                 value={option}
-                className="size-5 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="relative z-10 size-5 shrink-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               />
-              <span className="min-w-0 break-words">{option}</span>
-            </Label>
+              <Label
+                htmlFor={id}
+                className="min-w-0 flex-1 cursor-pointer break-words py-3 text-base font-normal leading-snug after:absolute after:inset-0"
+              >
+                {option}
+              </Label>
+            </div>
           );
         })}
       </RadioGroup>
