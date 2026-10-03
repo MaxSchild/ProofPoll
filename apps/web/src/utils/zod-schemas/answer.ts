@@ -11,6 +11,8 @@ export const submitResponseSchema = z.object({
       (answers) => Object.keys(answers).length <= MAX_QUESTIONS,
       `Use at most ${MAX_QUESTIONS} answers`
     ),
+  // One per filled-in form, so a retried submit is not stored twice.
+  clientId: z.uuid(),
 });
 
 export type SubmitResponseInput = z.infer<typeof submitResponseSchema>;

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  newClientId,
   countAnswered,
   formatCountdown,
   isComplete,
@@ -60,6 +61,26 @@ describe('stored receipt', () => {
       '{"seq":1,"createdAt":"yesterday"}',
     ]) {
       expect(parseStoredReceipt(raw)).toBeNull();
+    }
+  });
+});
+
+describe('newClientId', () => {
+  const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+  test('returns a v4 UUID', () => {
+    expect(newClientId()).toMatch(uuidV4);
+  });
+
+  test('falls back to getRandomValues outside secure contexts', () => {
+    const original = crypto.randomUUID;
+    Object.defineProperty(crypto, 'randomUUID', { value: undefined, configurable: true });
+    try {
+      const a = newClientId();
+      expect(a).toMatch(uuidV4);
+      expect(newClientId()).not.toBe(a);
+    } finally {
+      Object.defineProperty(crypto, 'randomUUID', { value: original, configurable: true });
     }
   });
 });

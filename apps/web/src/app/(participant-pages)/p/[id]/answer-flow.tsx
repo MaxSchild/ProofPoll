@@ -13,6 +13,7 @@ import {
   countAnswered,
   isComplete,
   loadReceipt,
+  newClientId,
   saveReceipt,
   type Answers,
 } from '@/utils/answers';
@@ -27,6 +28,7 @@ export interface AnswerFlowPoll {
 }
 
 const SAVE_FAILED = "Your answer wasn't saved. Check your connection and try again.";
+const INVALID = 'Your answers could not be read. Reload the page and try again.';
 
 export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }) {
   const [answers, setAnswers] = useState<Answers>({});
@@ -39,6 +41,11 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
   const [checked, setChecked] = useState(lab);
   const [round, setRound] = useState(0);
   const formRef = useRef<HTMLFormElement>(null);
+  // The same id is sent again on retries, so a submit whose response was lost
+  // is not stored twice; "Next participant" starts a new one.
+  const clientIdRef = useRef<string>('');
+  // Blocks a second submit before React has re-rendered the button.
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
     if (lab) return;
@@ -57,6 +64,7 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
   }, [round]);
 
   function nextParticipant() {
+    clientIdRef.current = '';
     setAnswers({});
     setError(null);
     setReceipt(null);
@@ -70,22 +78,31 @@ export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!complete || submitting) return;
+    if (!complete || inFlightRef.current) return;
+    inFlightRef.current = true;
     setSubmitting(true);
     setError(null);
+    if (!clientIdRef.current) clientIdRef.current = newClientId();
     try {
-      const result = await submitResponseAction({ pollId: poll.id, answers });
+      const result = await submitResponseAction({
+        pollId: poll.id,
+        answers,
+        clientId: clientIdRef.current,
+      });
       if (result?.data) {
         const saved = { seq: result.data.seq, createdAt: result.data.createdAt };
         // Lab computers are shared, so they are never locked.
         if (!lab) saveReceipt(poll.id, saved);
         setReceipt(saved);
+      } else if (result?.validationErrors) {
+        setError(INVALID);
       } else {
         setError(result?.serverError ?? SAVE_FAILED);
       }
     } catch {
       setError(SAVE_FAILED);
     } finally {
+      inFlightRef.current = false;
       setSubmitting(false);
     }
   }
