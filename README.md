@@ -221,7 +221,7 @@ pnpm gen-types
 ### 4. Run the app
 ```bash
 pnpm dev
-# → http://localhost:3000
+# → http://localhost:3100
 ```
 
 ### 5. Test

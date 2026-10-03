@@ -32,7 +32,7 @@ test('getURL falls back to the local dev port', () => {
   delete process.env.NEXT_PUBLIC_SITE_URL;
   delete process.env.NEXT_PUBLIC_VERCEL_URL;
 
-  expect(getURL()).toBe('http://localhost:3000/');
+  expect(getURL()).toBe('http://localhost:3100/');
 });
 
 test('toSiteURL joins paths against the normalized base URL', () => {

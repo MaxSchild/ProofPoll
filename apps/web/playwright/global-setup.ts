@@ -56,7 +56,7 @@ export async function configurePlaywrightEnv() {
       );
       envContent = envContent.replace(
         /NEXT_PUBLIC_SITE_URL=.*/,
-        `NEXT_PUBLIC_SITE_URL=${process.env.PLAYWRIGHT_TEST_BASE_URL ?? 'http://localhost:3000/'}`
+        `NEXT_PUBLIC_SITE_URL=${process.env.PLAYWRIGHT_TEST_BASE_URL ?? 'http://localhost:3100/'}`
       );
       fs.writeFileSync(envPath, envContent);
     }

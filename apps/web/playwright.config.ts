@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process';
 import { devices, type PlaywrightTestConfig } from '@playwright/test';
 import path from 'path';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3100;
 const baseURL = `http://localhost:${PORT}`;
 const isCI = !!process.env.CI;
 
@@ -18,7 +18,7 @@ function parseEnvOutput(output: string): Record<string, string> {
 }
 
 function getWebServerEnv() {
-  const webServerEnv = { ...process.env };
+  const webServerEnv = { ...process.env, PORT: String(PORT) };
   const databaseDir = path.resolve(__dirname, '..', 'database');
 
   try {
