@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { signupUserHelper } from '../_helpers/signup.helper';
+
 async function createPoll(page: Page, title: string, withAttentionCheck: boolean) {
   await page.goto('/polls/new');
   await page.getByLabel('Title *').fill(title);
@@ -100,5 +102,34 @@ test.describe('Logged-in user polls', () => {
     await page.goto('/polls/zzzzzzzz');
     await expect(page.getByText(/could not be found/i)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Open for answers' })).toHaveCount(0);
+  });
+
+  test('another researcher cannot see or manage the poll', async ({ page, browser }) => {
+    const title = `Not yours ${Date.now()}`;
+    await createPoll(page, title, true);
+    await page.getByRole('button', { name: 'Open for answers' }).click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Open for answers' }).click();
+    await expect(page.getByText('Open', { exact: true }).first()).toBeVisible();
+    const pollPath = new URL(page.url()).pathname;
+
+    // A second researcher, in a separate browser session.
+    const otherContext = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const other = await otherContext.newPage();
+    await signupUserHelper({ page: other, emailAddress: `other${Date.now()}@example.com` });
+
+    // Open polls are public to participants, but the researcher pages stay
+    // the owner's: no plan details, no attention-check answer, no actions.
+    for (const path of [pollPath, `${pollPath}/edit`]) {
+      await other.goto(path);
+      await expect(other.getByText('This page could not be found.')).toBeVisible();
+      await expect(other.getByText(title)).toHaveCount(0);
+      await expect(other.getByText(/Attention check, correct/)).toHaveCount(0);
+      await expect(other.getByRole('button', { name: 'Close poll' })).toHaveCount(0);
+    }
+
+    // And the poll is not on their dashboard.
+    await other.goto('/dashboard');
+    await expect(other.getByText(title)).toHaveCount(0);
+    await otherContext.close();
   });
 });
