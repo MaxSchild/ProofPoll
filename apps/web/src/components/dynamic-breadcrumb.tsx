@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation';
 const routeLabels: Record<string, string> = {
     dashboard: 'Dashboard',
     polls: 'Polls',
+    'my-papers': 'Papers',
     new: 'New poll',
     edit: 'Edit',
 };
@@ -49,7 +50,10 @@ export function DynamicBreadcrumb() {
                 {segments.map((segment, index) => {
                     const isLast = index === segments.length - 1;
                     const href = '/' + segments.slice(0, index + 1).join('/');
-                    const label = routeLabels[segment] || segment;
+                    const label =
+                        segment === 'new' && segments[0] === 'my-papers'
+                            ? 'New paper'
+                            : routeLabels[segment] || segment;
 
                     // Skip UUID segments in breadcrumb display
                     const isUUID =

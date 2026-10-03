@@ -30,6 +30,7 @@ export interface PollDetails extends PollListItem {
   attentionCheck: PollAttentionCheck | null;
   openedAt: string | null;
   closedAt: string | null;
+  paper: { id: string; title: string } | null;
 }
 
 async function currentUserId(): Promise<string> {
@@ -68,7 +69,7 @@ export async function getPoll(id: string): Promise<PollDetails | null> {
   const [pollResult, checkResult] = await Promise.all([
     supabase
       .from('polls')
-      .select('*, responses(count)')
+      .select('*, responses(count), papers(id, title)')
       .eq('id', id)
       .eq('owner_id', userId)
       .maybeSingle(),
@@ -102,6 +103,7 @@ export async function getPoll(id: string): Promise<PollDetails | null> {
       : null,
     openedAt: poll.opened_at,
     closedAt: poll.closed_at,
+    paper: poll.papers ? { id: poll.papers.id, title: poll.papers.title } : null,
   };
 }
 
