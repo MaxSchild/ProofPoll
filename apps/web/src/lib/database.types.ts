@@ -3,6 +3,57 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      answer_records: {
+        Row: {
+          created_at: string;
+          leaf_hash: string;
+          poll_id: string;
+          recorded_at: string | null;
+          response_id: string;
+          salt: string | null;
+          seq: number;
+          status: Database["public"]["Enums"]["record_status"];
+          tx: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          leaf_hash: string;
+          poll_id: string;
+          recorded_at?: string | null;
+          response_id: string;
+          salt?: string | null;
+          seq: number;
+          status?: Database["public"]["Enums"]["record_status"];
+          tx?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          leaf_hash?: string;
+          poll_id?: string;
+          recorded_at?: string | null;
+          response_id?: string;
+          salt?: string | null;
+          seq?: number;
+          status?: Database["public"]["Enums"]["record_status"];
+          tx?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "answer_records_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: false;
+            referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "answer_records_response_id_fkey";
+            columns: ["response_id"];
+            isOneToOne: true;
+            referencedRelation: "responses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       doi_matches: {
         Row: {
           confirm_by: string;
@@ -149,6 +200,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "poll_attention_checks_poll_id_fkey";
+            columns: ["poll_id"];
+            isOneToOne: true;
+            referencedRelation: "polls";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      poll_records: {
+        Row: {
+          created_at: string;
+          plan_hash: string;
+          plan_tx: string | null;
+          poll_id: string;
+          record_pubkey: string;
+          record_secret: string;
+          recorded_at: string | null;
+          status: Database["public"]["Enums"]["record_status"];
+        };
+        Insert: {
+          created_at?: string;
+          plan_hash: string;
+          plan_tx?: string | null;
+          poll_id: string;
+          record_pubkey: string;
+          record_secret: string;
+          recorded_at?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+        };
+        Update: {
+          created_at?: string;
+          plan_hash?: string;
+          plan_tx?: string | null;
+          poll_id?: string;
+          record_pubkey?: string;
+          record_secret?: string;
+          recorded_at?: string | null;
+          status?: Database["public"]["Enums"]["record_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "poll_records_poll_id_fkey";
             columns: ["poll_id"];
             isOneToOne: true;
             referencedRelation: "polls";
@@ -349,6 +441,38 @@ export type Database = {
       };
       discard_paper_version: { Args: { p_version_id: string }; Returns: undefined };
       expire_doi_match_now: { Args: { p_match_id: string }; Returns: undefined };
+      get_answer_records: {
+        Args: { p_poll_id: string };
+        Returns: {
+          answered_at: string;
+          leaf_hash: string;
+          recorded_at: string;
+          response_id: string;
+          seq: number;
+          status: Database["public"]["Enums"]["record_status"];
+          tx: string;
+        }[];
+      };
+      get_poll_record: {
+        Args: { p_poll_id: string };
+        Returns: {
+          answer_count: number;
+          closed_at: string;
+          description: string;
+          exclusion_rules: Json;
+          opened_at: string;
+          plan_hash: string;
+          plan_recorded_at: string;
+          plan_status: Database["public"]["Enums"]["record_status"];
+          plan_tx: string;
+          planned_n: number;
+          poll_id: string;
+          questions: Json;
+          record_pubkey: string;
+          status: Database["public"]["Enums"]["poll_status"];
+          title: string;
+        }[];
+      };
       get_public_poll: {
         Args: { p_id: string };
         Returns: {
@@ -439,6 +563,7 @@ export type Database = {
     Enums: {
       paper_status: "draft" | "in_review" | "published";
       poll_status: "draft" | "open" | "closed";
+      record_status: "pending" | "recorded" | "failed";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -556,6 +681,7 @@ export const Constants = {
     Enums: {
       paper_status: ["draft", "in_review", "published"],
       poll_status: ["draft", "open", "closed"],
+      record_status: ["pending", "recorded", "failed"],
     },
   },
 } as const;
