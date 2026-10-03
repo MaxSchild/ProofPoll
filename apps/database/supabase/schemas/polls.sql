@@ -46,8 +46,9 @@ CREATE INDEX IF NOT EXISTS polls_owner_id_created_at_idx
   ON public.polls (owner_id, created_at DESC);
 
 -- The correct option of the attention-check question. Kept out of
--- polls.questions because open polls are readable by anyone, and a visible
--- answer would make the check useless. Only the owner can read it.
+-- polls.questions, which participants receive through get_public_poll(),
+-- because a visible answer would make the check useless. Only the owner can
+-- read it.
 CREATE TABLE IF NOT EXISTS public.poll_attention_checks (
   poll_id text PRIMARY KEY REFERENCES public.polls (id) ON DELETE CASCADE,
   question_id text NOT NULL,
@@ -61,7 +62,12 @@ CREATE TABLE IF NOT EXISTS public.responses (
   seq integer NOT NULL CHECK (seq > 0),
   answers jsonb NOT NULL CHECK (jsonb_typeof(answers) = 'object'),
   created_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT responses_poll_id_seq_key UNIQUE (poll_id, seq)
+  -- Set by the participant's browser once per form, so a retried submit
+  -- (e.g. after a lost connection) returns the saved answer instead of
+  -- adding a duplicate.
+  client_id uuid,
+  CONSTRAINT responses_poll_id_seq_key UNIQUE (poll_id, seq),
+  CONSTRAINT responses_poll_id_client_id_key UNIQUE (poll_id, client_id)
 );
 
 -- -----------------------------------------------------------------------------
@@ -387,19 +393,62 @@ CREATE TRIGGER prepare_response
   EXECUTE FUNCTION public.prepare_response();
 
 -- The participant-facing way to answer: anonymous visitors have no insert
--- policy on responses, so they go through this function.
-CREATE OR REPLACE FUNCTION public.submit_response(p_poll_id text, p_answers jsonb)
+-- policy on responses, so they go through this function. With a client id,
+-- submitting the same form again returns the answer already saved.
+CREATE OR REPLACE FUNCTION public.submit_response(
+  p_poll_id text,
+  p_answers jsonb,
+  p_client_id uuid DEFAULT NULL
+)
 RETURNS TABLE (id text, seq integer, created_at timestamptz)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
 AS $$
 BEGIN
+  IF p_client_id IS NOT NULL THEN
+    RETURN QUERY
+      SELECT r.id, r.seq, r.created_at FROM public.responses r
+      WHERE r.poll_id = p_poll_id AND r.client_id = p_client_id;
+    IF FOUND THEN
+      RETURN;
+    END IF;
+  END IF;
+
   RETURN QUERY
-    INSERT INTO public.responses AS r (poll_id, seq, answers)
-    VALUES (p_poll_id, 1, p_answers)  -- seq is replaced by prepare_response()
+    INSERT INTO public.responses AS r (poll_id, seq, answers, client_id)
+    VALUES (p_poll_id, 1, p_answers, p_client_id)  -- seq is replaced by prepare_response()
+    ON CONFLICT (poll_id, client_id) DO NOTHING
     RETURNING r.id, r.seq, r.created_at;
+  IF NOT FOUND THEN
+    -- A concurrent retry with the same client id saved it first.
+    RETURN QUERY
+      SELECT r.id, r.seq, r.created_at FROM public.responses r
+      WHERE r.poll_id = p_poll_id AND r.client_id = p_client_id;
+  END IF;
 END;
+$$;
+
+-- What a participant needs to answer an open poll (and to see that a closed
+-- one no longer accepts answers): no owner, authors or exclusion rules.
+-- Polls themselves are only readable by their owner, so poll ids can't be
+-- listed through the API.
+CREATE OR REPLACE FUNCTION public.get_public_poll(p_id text)
+RETURNS TABLE (
+  id text,
+  title text,
+  description text,
+  questions jsonb,
+  status public.poll_status
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT p.id, p.title, p.description, p.questions, p.status
+  FROM public.polls p
+  WHERE p.id = p_id AND p.status IN ('open', 'closed');
 $$;
 
 -- Number of answers to an open or closed poll (or to one's own poll),
@@ -434,7 +483,8 @@ BEGIN
       OR NEW.poll_id <> OLD.poll_id
       OR NEW.seq <> OLD.seq
       OR NEW.answers <> OLD.answers
-      OR NEW.created_at <> OLD.created_at THEN
+      OR NEW.created_at <> OLD.created_at
+      OR NEW.client_id IS DISTINCT FROM OLD.client_id THEN
       RAISE EXCEPTION 'Answers cannot be changed' USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -469,8 +519,9 @@ ALTER TABLE public.polls ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.poll_attention_checks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.responses ENABLE ROW LEVEL SECURITY;
 
+-- Owner-only. Participants read open polls through get_public_poll().
 CREATE POLICY polls_select_policy ON public.polls
-  FOR SELECT USING (status <> 'draft' OR owner_id = (SELECT auth.uid()));
+  FOR SELECT TO authenticated USING (owner_id = (SELECT auth.uid()));
 
 CREATE POLICY polls_insert_policy ON public.polls
   FOR INSERT TO authenticated

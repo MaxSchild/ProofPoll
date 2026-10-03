@@ -80,6 +80,7 @@ export type Database = {
       responses: {
         Row: {
           answers: NonNullable<Json>;
+          client_id: string | null;
           created_at: string;
           id: string;
           poll_id: string;
@@ -87,6 +88,7 @@ export type Database = {
         };
         Insert: {
           answers: NonNullable<Json>;
+          client_id?: string | null;
           created_at?: string;
           id?: string;
           poll_id: string;
@@ -94,6 +96,7 @@ export type Database = {
         };
         Update: {
           answers?: NonNullable<Json>;
+          client_id?: string | null;
           created_at?: string;
           id?: string;
           poll_id?: string;
@@ -114,10 +117,20 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_public_poll: {
+        Args: { p_id: string };
+        Returns: {
+          description: string;
+          id: string;
+          questions: Json;
+          status: Database["public"]["Enums"]["poll_status"];
+          title: string;
+        }[];
+      };
       poll_response_count: { Args: { p_poll_id: string }; Returns: number };
       save_poll: { Args: { p_check: Json; p_id: string; p_poll: Json }; Returns: string };
       submit_response: {
-        Args: { p_answers: Json; p_poll_id: string };
+        Args: { p_answers: Json; p_client_id?: string; p_poll_id: string };
         Returns: {
           created_at: string;
           id: string;
