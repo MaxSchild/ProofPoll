@@ -36,6 +36,8 @@ function getWebServerEnv() {
     webServerEnv.NEXT_PUBLIC_SUPABASE_URL = `${parsed.API_URL}/`;
     webServerEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = parsed.PUBLISHABLE_KEY;
     webServerEnv.NEXT_PUBLIC_SITE_URL = `${baseURL}/`;
+    // For the Solana records, which only run when SOLANA_SERVICE_KEY is set.
+    if (parsed.SECRET_KEY) webServerEnv.SUPABASE_SECRET_KEY = parsed.SECRET_KEY;
     return webServerEnv;
   } catch (error) {
     const err = error as { message?: string };
