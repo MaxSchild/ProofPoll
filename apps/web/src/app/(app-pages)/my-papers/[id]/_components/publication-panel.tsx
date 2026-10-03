@@ -3,9 +3,10 @@
 import { BellRing, ExternalLink, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { CopyField } from '@/components/copy-field';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -81,33 +82,22 @@ function AttachDoi({ paperId }: { paperId: string }) {
   const id = useId();
   const router = useRouter();
   const [doi, setDoi] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const cleanDoi = doi.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
 
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      const message = errorOf(
-        await publishPaperAction({ paperId, doi: doi.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '') }),
-        'Enter a DOI like 10.1287/mnsc.2026.01234'
-      );
-      if (message) {
-        setError(message);
-        return;
-      }
+  async function publish(): Promise<string | null> {
+    const message = errorOf(
+      await publishPaperAction({ paperId, doi: cleanDoi }),
+      'Enter a DOI like 10.1287/mnsc.2026.01234'
+    );
+    if (!message) {
       toast.success('Paper published');
       router.refresh();
-    } catch {
-      setError('Something went wrong. Check your connection and try again.');
-    } finally {
-      setBusy(false);
     }
+    return message;
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-2" noValidate>
+    <div className="space-y-2">
       <Label htmlFor={id}>Attach the DOI and publish</Label>
       <p className="text-sm text-muted-foreground">
         Once the paper is out, its page becomes public and searchable, with your names, the
@@ -121,15 +111,17 @@ function AttachDoi({ paperId }: { paperId: string }) {
           placeholder="10.1287/mnsc.2026.01234"
           autoComplete="off"
           className="max-w-sm font-mono"
-          aria-invalid={error ? true : undefined}
         />
-        <Button type="submit" disabled={busy || doi.trim() === ''}>
-          {busy ? <Spinner aria-hidden="true" /> : null}
-          Publish
-        </Button>
+        <ConfirmActionDialog
+          trigger={<Button disabled={cleanDoi === ''}>Publish</Button>}
+          title={`Publish with DOI ${cleanDoi}?`}
+          description="The page becomes public and searchable, with your names. The DOI can't be changed and the paper can't be unpublished."
+          cancelLabel="Not yet"
+          confirmLabel="Publish"
+          onConfirm={publish}
+        />
       </div>
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-    </form>
+    </div>
   );
 }
 

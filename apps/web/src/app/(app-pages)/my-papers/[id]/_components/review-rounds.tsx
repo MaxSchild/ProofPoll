@@ -67,7 +67,10 @@ export function ReviewRounds({
         <ManuscriptUpload paperId={paperId} versionNumber={nextNumber} replacing={pending !== null} />
       )}
 
-      {pending && !blockedReason ? <ConfirmNumbers version={pending} polls={polls} /> : null}
+      {pending && !blockedReason ? (
+        // Keyed by version: a new upload replaces the form's values.
+        <ConfirmNumbers key={pending.id} version={pending} polls={polls} />
+      ) : null}
 
       {confirmed.length > 0 ? (
         <ol className="space-y-4" aria-label="Confirmed review rounds">
@@ -284,6 +287,7 @@ function ConfirmNumbers({ version, polls }: { version: PaperVersion; polls: Pape
                 <Label htmlFor={`n-${study.pollId}`}>Reported N</Label>
                 <Input
                   id={`n-${study.pollId}`}
+                  aria-describedby={`n-${study.pollId}-hint`}
                   inputMode="numeric"
                   value={value.reportedN}
                   onChange={(event) => {
@@ -292,12 +296,15 @@ function ConfirmNumbers({ version, polls }: { version: PaperVersion; polls: Pape
                   }}
                   className="font-mono"
                 />
-                <p className="text-xs text-muted-foreground">Participants in the analysis.</p>
+                <p id={`n-${study.pollId}-hint`} className="text-xs text-muted-foreground">
+                  Participants in the analysis.
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor={`ex-${study.pollId}`}>Reported exclusions</Label>
                 <Input
                   id={`ex-${study.pollId}`}
+                  aria-describedby={`ex-${study.pollId}-hint`}
                   inputMode="numeric"
                   value={value.reportedExclusions}
                   onChange={(event) => {
@@ -306,7 +313,9 @@ function ConfirmNumbers({ version, polls }: { version: PaperVersion; polls: Pape
                   }}
                   className="font-mono"
                 />
-                <p className="text-xs text-muted-foreground">Answers the paper says it excluded.</p>
+                <p id={`ex-${study.pollId}-hint`} className="text-xs text-muted-foreground">
+                  Answers the paper says it excluded.
+                </p>
               </div>
             </div>
             <div className="space-y-3">

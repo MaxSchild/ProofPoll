@@ -85,11 +85,15 @@ export function PaperForm({ mode, polls, defaultValues, paperId }: PaperFormProp
         <FormField
           control={form.control}
           name="pollIds"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
-              <fieldset className="space-y-4">
+              <fieldset
+                className="space-y-4"
+                aria-describedby="paper-polls-hint paper-polls-error"
+                aria-invalid={fieldState.invalid || undefined}
+              >
                 <legend className="text-lg font-semibold tracking-tight">Studies</legend>
-                <p className="text-sm text-muted-foreground">
+                <p id="paper-polls-hint" className="text-sm text-muted-foreground">
                   The polls this paper reports on. Each poll can belong to one paper. The
                   paper can go to review once all its polls are closed.
                 </p>
@@ -136,7 +140,7 @@ export function PaperForm({ mode, polls, defaultValues, paperId }: PaperFormProp
                   </ul>
                 )}
               </fieldset>
-              <FormMessage />
+              <FormMessage id="paper-polls-error" />
             </FormItem>
           )}
         />

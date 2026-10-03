@@ -79,10 +79,11 @@ export function StudyVerdict({
                 )}
               >
                 {item.ok ? (
-                  <Check className="size-3.5 text-success" aria-label="matches" />
+                  <Check className="size-3.5 text-success" aria-hidden="true" />
                 ) : (
-                  <X className="size-3.5" aria-label="differs" />
+                  <X className="size-3.5" aria-hidden="true" />
                 )}
+                <span className="sr-only">{item.ok ? 'Matches:' : 'Differs:'}</span>
                 <span className="font-mono text-muted-foreground">
                   Q{questionNumber.get(item.question_id) ?? '?'}
                 </span>

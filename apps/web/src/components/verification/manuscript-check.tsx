@@ -14,14 +14,19 @@ import { sha256OfFile } from '@/utils/hash';
 export function ManuscriptCheck({ sha256 }: { sha256: string }) {
   const id = useId();
   const [result, setResult] = useState<{ name: string; matches: boolean } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onFile(file: File | undefined) {
     if (!file) return;
     setBusy(true);
+    setError(null);
     try {
       const hash = await sha256OfFile(file);
       setResult({ name: file.name, matches: hash === sha256 });
+    } catch {
+      setResult(null);
+      setError('This file could not be read. Try again, or use a current browser.');
     } finally {
       setBusy(false);
     }
@@ -51,9 +56,11 @@ export function ManuscriptCheck({ sha256 }: { sha256: string }) {
           browser.
         </p>
       </div>
+      {/* Mounted from the start so screen readers announce the first result. */}
+      <div role="status">
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {result ? (
         <p
-          role="status"
           className={
             result.matches
               ? 'flex items-center gap-2 text-sm text-success'
@@ -70,6 +77,7 @@ export function ManuscriptCheck({ sha256 }: { sha256: string }) {
             : `${result.name} is a different file from the one that was checked.`}
         </p>
       ) : null}
+      </div>
     </div>
   );
 }

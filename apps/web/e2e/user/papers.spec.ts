@@ -78,6 +78,10 @@ test.describe('Logged-in user verifies a paper against the record', () => {
     // Round 2: the paper drops an answer and misreports a result.
     await page.getByLabel('Start review round 2').setInputFiles(manuscript('round-2.pdf', 'two'));
     await expect(page.getByRole('heading', { name: 'Confirm the numbers for round 2' })).toBeVisible();
+    await page.getByLabel('Reported N').fill('99');
+    // Uploading again replaces the proposed numbers and any edits.
+    await page.getByLabel('Upload again for round 2').setInputFiles(manuscript('round-2b.pdf', 'two-b'));
+    await expect(page.getByLabel('Reported N')).toHaveValue('3');
     await page.getByLabel('Reported N').fill('2');
     await page.getByLabel('Study 1, question 1, Coffee: reported percent').fill('50');
     await confirmRound(page, 2);
