@@ -8,7 +8,10 @@ import { expect, type Page } from '@playwright/test';
 export async function createDraftPoll(
   page: Page,
   title: string,
-  { plannedN = 50 }: { plannedN?: number } = {},
+  {
+    plannedN = 50,
+    attentionCheck = false,
+  }: { plannedN?: number; attentionCheck?: boolean } = {},
 ): Promise<string> {
   await page.goto('/polls/new');
   await page.getByLabel('Title *').fill(title);
@@ -31,6 +34,14 @@ export async function createDraftPoll(
   await page
     .getByRole('textbox', { name: 'Option 2 of question 2' })
     .fill('Yes');
+
+  if (attentionCheck) {
+    // Question 2 checks attention; "Yes" is the correct option.
+    await page.getByLabel('Use as attention check').nth(1).check();
+    await page
+      .getByRole('radio', { name: 'Option 2 is the correct answer' })
+      .check();
+  }
 
   await page.getByRole('button', { name: 'Save as draft' }).click();
   await expect(page).toHaveURL(/\/polls\/[A-Za-z0-9]{8}$/);
