@@ -5,9 +5,12 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { PollStatusBadge } from '@/components/poll-status-badge';
-import { getPoll } from '@/data/user/poll-queries';
+import { getPoll, getPollResponses } from '@/data/user/poll-queries';
+import { toSiteURL } from '@/utils/helpers';
 import { PollOverview } from './_components/poll-overview';
 import { PollTabs } from './_components/poll-tabs';
+import { ResultsPanel } from './_components/results-panel';
+import { SharePanel } from './_components/share-panel';
 
 export const metadata: Metadata = { title: 'Poll · AllCounted' };
 
@@ -19,6 +22,8 @@ export default async function PollPage({
   const { id } = await params;
   const poll = await getPoll(id);
   if (!poll) notFound();
+  const responses = await getPollResponses(id);
+  const answerUrl = toSiteURL(`/p/${poll.id}`);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
@@ -47,7 +52,26 @@ export default async function PollPage({
         </header>
       </div>
       <Suspense fallback={null}>
-        <PollTabs overview={<PollOverview poll={poll} />} />
+        <PollTabs
+          overview={<PollOverview poll={poll} />}
+          share={
+            <SharePanel
+              pollId={poll.id}
+              status={poll.status}
+              answerUrl={answerUrl}
+              labUrl={`${answerUrl}?lab=1`}
+            />
+          }
+          results={
+            <ResultsPanel
+              pollId={poll.id}
+              questions={poll.questions}
+              attentionCheck={poll.attentionCheck}
+              plannedN={poll.plannedN}
+              responses={responses}
+            />
+          }
+        />
       </Suspense>
     </div>
   );

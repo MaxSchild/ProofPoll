@@ -125,7 +125,7 @@ export function PollOverview({ poll }: { poll: PollDetails }) {
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
             <Info className="size-4 shrink-0" aria-hidden="true" />
-            The answer link and QR code will appear in the Share tab.
+            The answer link and QR code are in the Share tab.
           </p>
           <OpenActions id={poll.id} />
         </div>
