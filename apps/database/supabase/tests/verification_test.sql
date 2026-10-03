@@ -1,6 +1,6 @@
 BEGIN;
 
-SELECT plan(52);
+SELECT plan(53);
 
 -- -----------------------------------------------------------------------------
 -- Fixtures: two researchers, a closed poll with 4 answers of which 1 fails
@@ -284,7 +284,7 @@ SELECT is(
 );
 SELECT is(public.get_published_paper((SELECT id FROM paper)), NULL, 'the public page is empty before publication');
 SELECT is_empty(
-  $$SELECT * FROM public.search_published_papers('{}', '{}', ARRAY['commuting', 'mood'])$$,
+  $$SELECT * FROM public.search_published_papers('{}', '{}', ARRAY['commuting', 'mood']) WHERE id = (SELECT id FROM paper)$$,
   'papers in review are not searchable'
 );
 SELECT is_empty($$SELECT 1 FROM public.paper_versions$$, 'anonymous visitors cannot list review rounds');
@@ -294,17 +294,24 @@ SELECT is_empty($$SELECT 1 FROM public.paper_versions$$, 'anonymous visitors can
 -- -----------------------------------------------------------------------------
 RESET ROLE;
 SELECT pg_temp.act_as('11111111-1111-1111-1111-111111111111');
+SELECT public.record_doi_match((SELECT id FROM paper), '10.5555/other', 'Another paper', 'crossref', 'title_authors');
+SELECT public.respond_to_doi_match((SELECT id FROM public.doi_matches), false);
+SELECT is(
+  public.record_doi_match((SELECT id FROM paper), '10.5555/OTHER', 'Another paper', 'crossref', 'title_authors'),
+  NULL,
+  'a rejected DOI is not proposed again'
+);
 SELECT public.record_doi_match((SELECT id FROM paper), '10.5555/AC.1', 'Commuting and mood', 'crossref', 'title_authors');
 UPDATE public.papers SET auto_matched = true;
 SELECT is((SELECT auto_matched FROM public.papers), false, 'auto_matched cannot be set by the researcher');
 SELECT is(public.publish_expired_doi_matches(), 0, 'nothing is published before the 14 days are over');
-SELECT public.expire_doi_match_now((SELECT id FROM public.doi_matches));
+SELECT public.expire_doi_match_now((SELECT id FROM public.doi_matches WHERE status = 'pending'));
 SELECT results_eq(
   $$SELECT status::text, doi, auto_matched FROM public.papers$$,
   $$VALUES ('published', '10.5555/ac.1', true)$$,
   'an unanswered match publishes the paper, marked as matched automatically'
 );
-SELECT is((SELECT status FROM public.doi_matches), 'auto_published', 'the match is closed');
+SELECT is((SELECT status FROM public.doi_matches WHERE doi = '10.5555/ac.1'), 'auto_published', 'the match is closed');
 
 RESET ROLE;
 SELECT pg_temp.act_as(NULL);
@@ -326,7 +333,8 @@ SELECT is(
 SELECT results_eq(
   $$SELECT id FROM public.search_published_papers('{10.5555/AC.1}', '{}', '{}')
     UNION ALL SELECT id FROM public.search_published_papers('{}', ARRAY[(SELECT id FROM ids)], '{}')
-    UNION ALL SELECT id FROM public.search_published_papers('{}', '{}', ARRAY['commuting', 'mood', 'journal'])$$,
+    UNION ALL SELECT id FROM public.search_published_papers('{}', '{}', ARRAY['commuting', 'mood', 'journal'])
+      WHERE id = (SELECT id FROM paper)$$,
   $$VALUES ((SELECT id FROM paper)), ((SELECT id FROM paper)), ((SELECT id FROM paper))$$,
   'published papers are found by DOI, by a poll link and by title words'
 );
@@ -346,7 +354,8 @@ SELECT is(
 RESET ROLE;
 DELETE FROM auth.users WHERE id = '11111111-1111-1111-1111-111111111111';
 SELECT is_empty(
-  $$SELECT 1 FROM public.papers UNION ALL SELECT 1 FROM public.validation_results$$,
+  $$SELECT 1 FROM public.papers WHERE id = (SELECT id FROM paper)
+    UNION ALL SELECT 1 FROM public.validation_results WHERE poll_id = (SELECT id FROM ids)$$,
   'deleting the owner account removes their papers and verdicts'
 );
 

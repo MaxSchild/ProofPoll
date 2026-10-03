@@ -800,6 +800,7 @@ CREATE TRIGGER guard_confirmed_validation_truncate
 -- -----------------------------------------------------------------------------
 -- Published DOI detection. The daily job (Crossref and OpenAlex) calls
 -- record_doi_match(); in the prototype it is triggered from the paper page.
+-- Returns the pending match, or null for a DOI the researcher rejected.
 -- -----------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.record_doi_match(
   p_paper_id text,
@@ -827,6 +828,14 @@ BEGIN
   WHERE m.paper_id = p_paper_id AND m.status = 'pending';
   IF FOUND THEN
     RETURN v_id;
+  END IF;
+
+  -- A DOI the researcher said isn't theirs is never proposed again.
+  IF EXISTS (
+    SELECT 1 FROM public.doi_matches m
+    WHERE m.paper_id = p_paper_id AND m.doi = lower(p_doi) AND m.status = 'rejected'
+  ) THEN
+    RETURN NULL;
   END IF;
 
   INSERT INTO public.doi_matches (paper_id, doi, matched_title, source, reason)

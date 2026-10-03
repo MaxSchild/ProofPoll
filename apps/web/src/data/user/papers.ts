@@ -88,6 +88,19 @@ export const startReviewRoundAction = authActionClient
   .schema(startReviewRoundSchema)
   .action(async ({ parsedInput: { paperId, sha256, fileName }, ctx: { userId } }) => {
     const supabase = await createSupabaseClient();
+    // Check the paper before reading every answer of its polls.
+    const { data: paper, error: paperError } = await supabase
+      .from('papers')
+      .select('status')
+      .eq('id', paperId)
+      .eq('owner_id', userId)
+      .maybeSingle();
+    if (paperError) throw toUserError(paperError, "The manuscript couldn't be read. Try again.");
+    if (!paper) throw new UserFacingError('This paper could not be found.');
+    if (paper.status === 'published') {
+      throw new UserFacingError('A published paper gets no new review rounds');
+    }
+
     const { data: polls, error } = await supabase
       .from('polls')
       .select('id, questions, exclusion_rules, poll_attention_checks(question_id, correct_option), responses(id, seq, created_at, answers)')
@@ -244,6 +257,8 @@ export const runDetectionAction = authActionClient
       p_reason: match.reason,
     });
     if (matchError) throw toUserError(matchError, "The check couldn't run. Try again.");
+    // null: the researcher already said this DOI isn't theirs.
+    if (!matchId) return { found: false };
 
     const { data: saved } = await supabase
       .from('doi_matches')
