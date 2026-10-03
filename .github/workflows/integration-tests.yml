@@ -16,7 +16,7 @@ jobs:
     name: Playwright e2e
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: ${{ github.repository == 'imbhargav5/nextbase-nextjs-supabase-starter' }}
+    if: ${{ github.repository == 'MaxSchild/allcounted' }}
     env:
       PORT: 3000
       NODE_ENV: test
