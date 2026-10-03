@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import type { PollDetails } from '@/data/user/polls';
+import type { PollDetails } from '@/data/user/poll-queries';
 import { formatDateTime } from '@/utils/format';
 import { DraftActions, OpenActions } from './poll-actions';
 

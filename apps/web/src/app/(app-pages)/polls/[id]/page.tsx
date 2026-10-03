@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { PollStatusBadge } from '@/components/poll-status-badge';
-import { getPoll } from '@/data/user/polls';
+import { getPoll } from '@/data/user/poll-queries';
 import { PollOverview } from './_components/poll-overview';
 import { PollTabs } from './_components/poll-tabs';
 

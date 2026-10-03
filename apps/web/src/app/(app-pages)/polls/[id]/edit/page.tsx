@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 
 import { PageHeader } from '@/components/page-header';
-import { getPoll } from '@/data/user/polls';
+import { getPoll } from '@/data/user/poll-queries';
 import { pollToFormValues } from '@/utils/polls';
 import { PollForm } from '../../_components/poll-form';
 

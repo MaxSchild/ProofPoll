@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { getMyPolls, type PollListItem } from '@/data/user/polls';
+import { getMyPolls, type PollListItem } from '@/data/user/poll-queries';
 import { formatDate } from '@/utils/format';
 
 function AnswerCount({ poll }: { poll: PollListItem }) {
