@@ -14,8 +14,9 @@ import { usePathname } from 'next/navigation';
 
 const routeLabels: Record<string, string> = {
     dashboard: 'Dashboard',
-    item: 'Item',
-    new: 'New',
+    polls: 'Polls',
+    new: 'New poll',
+    edit: 'Edit',
 };
 
 export function DynamicBreadcrumb() {

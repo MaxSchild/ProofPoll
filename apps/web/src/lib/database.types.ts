@@ -115,6 +115,7 @@ export type Database = {
     };
     Functions: {
       poll_response_count: { Args: { p_poll_id: string }; Returns: number };
+      save_poll: { Args: { p_check: Json; p_id: string; p_poll: Json }; Returns: string };
       submit_response: {
         Args: { p_answers: Json; p_poll_id: string };
         Returns: {

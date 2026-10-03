@@ -6,4 +6,15 @@ test.describe.parallel('Anonymous user gated page access', () => {
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
     await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
   });
+
+  test('is redirected from new poll to login', async ({ page }) => {
+    await page.goto('/polls/new');
+    await expect(page).toHaveURL(/login/, { timeout: 10000 });
+    await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
+  });
+
+  test('is redirected from a poll page to login', async ({ page }) => {
+    await page.goto('/polls/abcd1234');
+    await expect(page).toHaveURL(/login/, { timeout: 10000 });
+  });
 });
