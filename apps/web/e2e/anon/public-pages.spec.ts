@@ -6,19 +6,10 @@ test.describe.parallel('Anonymous user public pages', () => {
 
     await expect(page).toHaveURL('/');
     await expect(
-      page.getByRole('heading', { name: /build your.+saas product.+faster/i })
+      page.getByRole('heading', { name: /nobody records survey answers/i })
     ).toBeVisible();
     await expect(
       page.getByRole('main').getByRole('link', { name: /get started/i })
-    ).toBeVisible();
-  });
-
-  test('can access the about page', async ({ page }) => {
-    await page.goto('/about');
-
-    await expect(page).toHaveURL('/about');
-    await expect(
-      page.getByRole('heading', { name: /modern full-stack starter kit/i })
     ).toBeVisible();
   });
 
@@ -26,7 +17,7 @@ test.describe.parallel('Anonymous user public pages', () => {
     await page.goto('/login');
 
     await expect(page).toHaveURL('/login');
-    await expect(page.getByText('Login to NextBase')).toBeVisible();
+    await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
   });
 
@@ -34,7 +25,7 @@ test.describe.parallel('Anonymous user public pages', () => {
     await page.goto('/sign-up');
 
     await expect(page).toHaveURL('/sign-up');
-    await expect(page.getByText('Register to NextBase')).toBeVisible();
+    await expect(page.getByText('Create your AllCounted account')).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
   });
 });

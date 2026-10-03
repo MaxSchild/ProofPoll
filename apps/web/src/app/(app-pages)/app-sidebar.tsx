@@ -19,7 +19,7 @@ async function SidebarHeaderContent() {
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild tooltip="Nextbase home">
+          <SidebarMenuButton size="lg" asChild tooltip="AllCounted home">
             <Link href="/">
               <Brand showTagline />
             </Link>

@@ -13,15 +13,7 @@ test.describe.parallel('Logged-in user page access', () => {
     await page.goto('/');
     await expect(page).toHaveURL('/');
     await expect(
-      page.getByRole('heading', { name: /build your.+saas product.+faster/i })
-    ).toBeVisible();
-  });
-
-  test('can access about page', async ({ page }) => {
-    await page.goto('/about');
-    await expect(page).toHaveURL('/about');
-    await expect(
-      page.getByRole('heading', { name: /modern full-stack starter kit/i })
+      page.getByRole('heading', { name: /nobody records survey answers/i })
     ).toBeVisible();
   });
 });

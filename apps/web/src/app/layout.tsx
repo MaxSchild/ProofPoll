@@ -25,11 +25,11 @@ const robotoMono = localFont({
 
 export const metadata = {
   title: {
-    default: 'Nextbase',
-    template: '%s · Nextbase',
+    default: 'AllCounted',
+    template: '%s · AllCounted',
   },
   description:
-    'An open-source Next.js and Supabase starter for shipping secure products faster.',
+    'Polls for research that record every answer the moment it is given, so reviewers can check that none were dropped.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

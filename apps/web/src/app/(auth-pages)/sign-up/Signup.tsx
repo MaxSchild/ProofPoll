@@ -102,7 +102,7 @@ export function SignUp({ next }: SignUpProps) {
 
   return (
     <AuthCard
-      title="Register to NextBase"
+      title="Create your AllCounted account"
       description="Create your account and start with a secure, working foundation."
       footer={
         <p className="w-full text-center text-sm text-muted-foreground">

@@ -116,11 +116,11 @@ export function Login({ next }: { next?: string }) {
 
   return (
     <AuthCard
-      title="Login to NextBase"
+      title="Sign in to AllCounted"
       description="Choose the sign-in method that works best for you."
       footer={
         <p className="w-full text-center text-sm text-muted-foreground">
-          New to Nextbase?{' '}
+          New to AllCounted?{' '}
           <Button variant="link" className="h-auto px-0" asChild>
             <Link href="/sign-up">Create an account</Link>
           </Button>
