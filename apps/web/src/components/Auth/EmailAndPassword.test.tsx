@@ -1,0 +1,89 @@
+import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, expect, test } from 'vitest';
+
+import { EmailAndPassword } from './EmailAndPassword';
+import { Email } from './Email';
+
+afterEach(cleanup);
+
+test('EmailAndPassword forwards button props to the submit button', () => {
+  render(
+    <EmailAndPassword
+      isLoading={false}
+      onSubmit={() => {}}
+      view="sign-in"
+      className="max-w-xs"
+      disabled
+      data-testid="login-submit"
+    />
+  );
+
+  const submitButton = screen.getByTestId('login-submit');
+
+  expect(submitButton.tagName).toBe('BUTTON');
+  expect(submitButton).toHaveProperty('type', 'submit');
+  expect(submitButton).toHaveProperty('disabled', true);
+  expect(submitButton.className).toContain('w-full');
+  expect(submitButton.className).toContain('max-w-xs');
+});
+
+test('EmailAndPassword still disables the submit button while loading', () => {
+  render(
+    <EmailAndPassword
+      isLoading
+      onSubmit={() => {}}
+      view="sign-in"
+      data-testid="loading-submit"
+    />
+  );
+
+  const submitButton = screen.getByTestId('loading-submit');
+
+  expect(submitButton).toHaveProperty('disabled', true);
+  expect(screen.getByText('Loading...').textContent).toBe('Loading...');
+});
+
+test('EmailAndPassword renders the create-account variant without the forgot-password link', () => {
+  render(
+    <EmailAndPassword
+      isLoading={false}
+      onSubmit={() => {}}
+      view="sign-up"
+    />
+  );
+
+  screen.getByRole('button', { name: 'Create account' });
+  expect(
+    screen.queryByRole('link', { name: /forgot your password\?/i })
+  ).toBeNull();
+});
+
+test('auth email fields use a standard example placeholder', () => {
+  const emailForm = render(
+    <Email
+      isLoading={false}
+      onSubmit={() => {}}
+      view="sign-in"
+    />
+  );
+
+  expect(emailForm.getByLabelText('Email address')).toHaveProperty(
+    'placeholder',
+    'email@example.com'
+  );
+
+  emailForm.unmount();
+
+  const passwordForm = render(
+    <EmailAndPassword
+      isLoading={false}
+      onSubmit={() => {}}
+      view="sign-in"
+    />
+  );
+
+  expect(passwordForm.getByLabelText('Email address')).toHaveProperty(
+    'placeholder',
+    'email@example.com'
+  );
+});
