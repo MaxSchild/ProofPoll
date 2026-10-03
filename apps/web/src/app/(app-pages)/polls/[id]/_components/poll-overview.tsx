@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -105,6 +106,16 @@ export function PollOverview({ poll }: { poll: PollDetails }) {
             none
           )}
         </Row>
+        {poll.paper ? (
+          <Row label="Paper">
+            <Link
+              href={`/my-papers/${poll.paper.id}`}
+              className="underline underline-offset-4"
+            >
+              {poll.paper.title}
+            </Link>
+          </Row>
+        ) : null}
         <Row label="Created">
           <time dateTime={poll.createdAt}>{formatDateTime(poll.createdAt)}</time>
         </Row>

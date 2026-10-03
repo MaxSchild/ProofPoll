@@ -1,0 +1,5 @@
+/** The SHA-256 of a file as 64 hex digits, computed in the browser. */
+export async function sha256OfFile(file: Blob): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}

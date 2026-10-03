@@ -4,6 +4,7 @@ import type { User } from '@supabase/supabase-js';
 import {
   ChevronUp,
   ExternalLink,
+  FileText,
   LayoutDashboard,
   ListPlus,
   LogOut,
@@ -39,6 +40,7 @@ import { signOutAction } from '@/data/auth/sign-out';
 const navigationItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'New poll', url: '/polls/new', icon: ListPlus },
+  { title: 'Papers', url: '/my-papers', icon: FileText },
 ];
 
 export function AppSidebarContent({ user }: { user: User }) {
@@ -78,7 +80,9 @@ export function AppSidebarContent({ user }: { user: User }) {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => {
-                const isActive = pathname === item.url;
+                const isActive =
+                  pathname === item.url ||
+                  (item.url === '/my-papers' && pathname.startsWith('/my-papers/'));
                 const Icon = item.icon;
 
                 return (
