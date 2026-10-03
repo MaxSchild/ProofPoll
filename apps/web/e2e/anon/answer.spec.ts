@@ -13,7 +13,7 @@ import { signupUserHelper } from '../_helpers/signup.helper';
 // Polls are created by a researcher in a separate browser context, since the
 // anon project has no logged-in user. One poll per scenario keeps the answer
 // numbers (#1, #2) deterministic.
-const polls = { main: '', lab: '', phone: '', closed: '' };
+const polls = { main: '', count: '', lab: '', phone: '', closed: '' };
 let owner: { context: BrowserContext; page: Page };
 
 async function answerAll(page: Page, coffee = 'Coffee') {
@@ -37,7 +37,7 @@ test.describe('Anonymous user answers a poll', () => {
     });
     owner = { context, page };
 
-    for (const key of ['main', 'lab', 'phone', 'closed'] as const) {
+    for (const key of ['main', 'count', 'lab', 'phone', 'closed'] as const) {
       polls[key] = await createDraftPoll(
         page,
         `Answer test ${key} ${Date.now()}`,
@@ -114,24 +114,30 @@ test.describe('Anonymous user answers a poll', () => {
     ).toHaveCount(0);
   });
 
-  test('a second participant gets the next number and the researcher sees the count', async ({
+  test('participants get consecutive numbers and the researcher sees the count', async ({
     browser,
   }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto(`/p/${polls.main}`);
-    await answerAll(page, 'Tea');
-    await page.getByRole('button', { name: 'Submit answers' }).click();
-    await expect(page.getByRole('status')).toContainText('#2');
-    await context.close();
+    // Its own poll, so it does not depend on the other tests' answers.
+    for (const [coffee, number] of [
+      ['Coffee', '#1'],
+      ['Tea', '#2'],
+    ] as const) {
+      const context = await browser.newContext();
+      const page = await context.newPage();
+      await page.goto(`/p/${polls.count}`);
+      await answerAll(page, coffee);
+      await page.getByRole('button', { name: 'Submit answers' }).click();
+      await expect(page.getByRole('status')).toContainText(number);
+      await context.close();
+    }
 
-    await owner.page.goto(`/polls/${polls.main}`);
+    await owner.page.goto(`/polls/${polls.count}`);
     await expect(owner.page.getByText('2 / 50')).toBeVisible();
     await owner.page.goto('/dashboard');
     await expect(
       owner.page
         .getByRole('row')
-        .filter({ hasText: 'Answer test main' })
+        .filter({ hasText: 'Answer test count' })
         .getByText('2 / 50'),
     ).toBeVisible();
   });
