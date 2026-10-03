@@ -1,6 +1,6 @@
 BEGIN;
 
-SELECT plan(57);
+SELECT plan(64);
 
 -- -----------------------------------------------------------------------------
 -- Fixtures: two researchers. Requests run as the roles PostgREST uses, with
@@ -302,9 +302,20 @@ SELECT isnt_empty(
 -- -----------------------------------------------------------------------------
 RESET ROLE;
 SELECT pg_temp.act_as(NULL);
-SELECT isnt_empty(
-  $$SELECT 1 FROM public.polls WHERE id = 'poll0001'$$,
-  'anonymous visitors can see an open poll'
+SELECT is_empty(
+  $$SELECT 1 FROM public.polls$$,
+  'anonymous visitors cannot list polls, not even open ones'
+);
+SELECT is(
+  (SELECT title FROM public.get_public_poll('poll0001')),
+  'Commute to WHU',
+  'anonymous visitors can read an open poll through get_public_poll'
+);
+SELECT is(
+  (SELECT count(*)::integer FROM public.get_public_poll(
+    (SELECT id FROM public.polls WHERE title = 'Saved together'))),
+  0,
+  'get_public_poll does not return drafts'
 );
 SELECT is_empty(
   $$SELECT 1 FROM public.poll_attention_checks WHERE poll_id = 'poll0001'$$,
@@ -319,6 +330,23 @@ SELECT is(
   (SELECT seq FROM public.submit_response('poll0001', '{"q1":"Bike","q2":"Red"}')),
   2,
   'the second answer gets number 2'
+);
+SELECT is(
+  (SELECT seq FROM public.submit_response('poll0001', '{"q1":"Walk","q2":"Red"}',
+    'aaaaaaaa-0000-0000-0000-000000000001')),
+  3,
+  'an answer with a client id gets the next number'
+);
+SELECT is(
+  (SELECT seq FROM public.submit_response('poll0001', '{"q1":"Walk","q2":"Red"}',
+    'aaaaaaaa-0000-0000-0000-000000000001')),
+  3,
+  'submitting the same form again returns the saved answer'
+);
+SELECT is(
+  public.poll_response_count('poll0001'),
+  3,
+  'a retried submit does not add a duplicate answer'
 );
 SELECT throws_ok(
   $$SELECT * FROM public.submit_response('poll0001', '{"q1":"Car","q2":"Red"}')$$,
@@ -352,7 +380,7 @@ SELECT throws_ok(
 );
 SELECT is(
   public.poll_response_count('poll0001'),
-  2,
+  3,
   'anyone can see how many answers an open poll has'
 );
 SELECT is_empty(
@@ -369,12 +397,16 @@ SELECT is_empty(
   $$SELECT 1 FROM public.responses WHERE poll_id = 'poll0001'$$,
   'another user cannot read the answers'
 );
+SELECT is_empty(
+  $$SELECT 1 FROM public.polls WHERE id = 'poll0001'$$,
+  'another user cannot read someone else''s open poll'
+);
 
 RESET ROLE;
 SELECT pg_temp.act_as('11111111-1111-1111-1111-111111111111');
 SELECT is(
   (SELECT count(*)::integer FROM public.responses WHERE poll_id = 'poll0001'),
-  2,
+  3,
   'the owner can read the answers'
 );
 
@@ -414,8 +446,14 @@ SELECT throws_ok(
 INSERT INTO public.responses (poll_id, seq, answers) VALUES ('poll0001', 99, '{"q1":"Walk","q2":"Red"}');
 SELECT is(
   (SELECT max(seq) FROM public.responses WHERE poll_id = 'poll0001'),
-  3,
+  4,
   'direct inserts by the server are numbered by the database, not by the caller'
+);
+SELECT throws_ok(
+  $$UPDATE public.responses SET client_id = 'bbbbbbbb-0000-0000-0000-000000000001' WHERE poll_id = 'poll0001' AND seq = 3$$,
+  '23514',
+  'Answers cannot be changed',
+  'the client id of an answer cannot be changed'
 );
 
 -- -----------------------------------------------------------------------------

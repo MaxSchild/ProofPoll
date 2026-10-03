@@ -18,12 +18,9 @@ export interface PublicPoll {
 export async function getPublicPoll(id: string): Promise<PublicPoll | null> {
   if (!/^[A-Za-z0-9]{8}$/.test(id)) return null;
   const supabase = await createSupabaseClient();
-  const { data, error } = await supabase
-    .from('polls')
-    .select('id, title, description, questions, status')
-    .eq('id', id)
-    .in('status', ['open', 'closed'])
-    .maybeSingle();
+  // Polls are owner-only in the database; get_public_poll returns just the
+  // fields above, and only for open and closed polls.
+  const { data, error } = await supabase.rpc('get_public_poll', { p_id: id }).maybeSingle();
   if (error) throw error;
   if (!data || data.status === 'draft') return null;
 
