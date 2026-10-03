@@ -8,6 +8,7 @@ import type {
   PollQuestion,
   PollStatus,
 } from '@/utils/polls';
+import type { PollResponseRow } from '@/utils/results';
 
 // Reads for server components. Kept out of the 'use server' actions module so
 // they are never exposed as callable server actions.
@@ -102,4 +103,28 @@ export async function getPoll(id: string): Promise<PollDetails | null> {
     openedAt: poll.opened_at,
     closedAt: poll.closed_at,
   };
+}
+
+/**
+ * Every answer to one of the user's polls, in arrival order. Row-level
+ * security only lets a poll's owner read its answers; the owner filter on
+ * the poll makes that explicit.
+ */
+export async function getPollResponses(pollId: string): Promise<PollResponseRow[]> {
+  const userId = await currentUserId();
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase
+    .from('responses')
+    .select('id, seq, created_at, answers, polls!inner(owner_id)')
+    .eq('poll_id', pollId)
+    .eq('polls.owner_id', userId)
+    .order('seq', { ascending: true });
+  if (error) throw error;
+
+  return data.map((row) => ({
+    id: row.id,
+    seq: row.seq,
+    createdAt: row.created_at,
+    answers: row.answers as Record<string, string>,
+  }));
 }
