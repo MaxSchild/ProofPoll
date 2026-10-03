@@ -4,13 +4,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
+import { ConfirmActionDialog } from '@/components/confirm-action-dialog';
 import { Button } from '@/components/ui/button';
 import {
   closePollAction,
   deletePollAction,
   openPollAction,
 } from '@/data/user/polls';
-import { ConfirmActionDialog } from './confirm-action-dialog';
 
 type ActionResult = { serverError?: string; validationErrors?: unknown } | undefined;
 

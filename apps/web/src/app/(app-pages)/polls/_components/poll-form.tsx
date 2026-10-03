@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 
+import { AuthorsField } from '@/components/authors-field';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -32,7 +33,6 @@ import {
   pollFormSchema,
   type PollFormValues,
 } from '@/utils/zod-schemas/poll';
-import { AuthorsField } from './authors-field';
 import { QuestionCard } from './question-card';
 
 type PollFormProps =

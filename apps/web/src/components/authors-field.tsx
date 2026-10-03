@@ -12,10 +12,15 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MAX_AUTHORS, type PollFormValues } from '@/utils/zod-schemas/poll';
+import { MAX_AUTHORS, type AuthorValues } from '@/utils/zod-schemas/poll';
 
-export function AuthorsField() {
-  const form = useFormContext<PollFormValues>();
+// Shared by the poll and paper forms: any form with an `authors` list.
+export function AuthorsField({
+  description = 'Optional. Used later in the summary of where the data came from.',
+}: {
+  description?: string;
+}) {
+  const form = useFormContext<{ authors: AuthorValues[] }>();
   const authors = useFieldArray({ control: form.control, name: 'authors' });
 
   return (
@@ -24,9 +29,7 @@ export function AuthorsField() {
         <h2 id="authors-heading" className="text-lg font-semibold tracking-tight">
           Authors
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Optional. Used later in the summary of where the data came from.
-        </p>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
 
       {authors.fields.map((field, index) => (
