@@ -7,17 +7,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Add a tab by adding its name here, a trigger and a TabsContent below. The
 // active tab lives in the URL (?tab=), so links to a tab work.
-const TABS = ['overview', 'share', 'results'] as const;
+const TABS = ['overview', 'share', 'results', 'record'] as const;
 type TabName = (typeof TABS)[number];
 
 export function PollTabs({
   overview,
   share,
   results,
+  record,
 }: {
   overview: ReactNode;
   share: ReactNode;
   results: ReactNode;
+  record: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -44,6 +46,9 @@ export function PollTabs({
         <TabsTrigger value="results" className="h-9 px-4">
           Results
         </TabsTrigger>
+        <TabsTrigger value="record" className="h-9 px-4">
+          Record
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="overview" className="mt-6">
         {overview}
@@ -53,6 +58,9 @@ export function PollTabs({
       </TabsContent>
       <TabsContent value="results" className="mt-6">
         {results}
+      </TabsContent>
+      <TabsContent value="record" className="mt-6">
+        {record}
       </TabsContent>
     </Tabs>
   );

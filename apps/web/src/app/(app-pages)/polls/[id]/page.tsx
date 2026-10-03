@@ -5,10 +5,12 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
 import { PollStatusBadge } from '@/components/poll-status-badge';
+import { getAnswerRecords, getPollRecord } from '@/data/anon/record-queries';
 import { getPoll, getPollResponses } from '@/data/user/poll-queries';
 import { toSiteURL } from '@/utils/helpers';
 import { PollOverview } from './_components/poll-overview';
 import { PollTabs } from './_components/poll-tabs';
+import { RecordPanel } from './_components/record-panel';
 import { ResultsPanel } from './_components/results-panel';
 import { SharePanel } from './_components/share-panel';
 
@@ -22,7 +24,11 @@ export default async function PollPage({
   const { id } = await params;
   const poll = await getPoll(id);
   if (!poll) notFound();
-  const responses = await getPollResponses(id);
+  const [responses, record, answerRecords] = await Promise.all([
+    getPollResponses(id),
+    getPollRecord(id),
+    getAnswerRecords(id),
+  ]);
   const answerUrl = toSiteURL(`/p/${poll.id}`);
 
   return (
@@ -69,6 +75,14 @@ export default async function PollPage({
               attentionCheck={poll.attentionCheck}
               plannedN={poll.plannedN}
               responses={responses}
+            />
+          }
+          record={
+            <RecordPanel
+              pollId={poll.id}
+              status={poll.status}
+              record={record}
+              answers={answerRecords}
             />
           }
         />
