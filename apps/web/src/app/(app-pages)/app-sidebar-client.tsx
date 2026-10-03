@@ -5,7 +5,9 @@ import {
   ChevronUp,
   ExternalLink,
   LayoutDashboard,
+  ListPlus,
   LogOut,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,6 +26,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
@@ -35,6 +38,7 @@ import { signOutAction } from '@/data/auth/sign-out';
 
 const navigationItems = [
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
+  { title: 'New poll', url: '/polls/new', icon: ListPlus },
 ];
 
 export function AppSidebarContent({ user }: { user: User }) {
@@ -65,6 +69,12 @@ export function AppSidebarContent({ user }: { user: User }) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupAction asChild title="New poll">
+            <Link href="/polls/new">
+              <Plus aria-hidden="true" />
+              <span className="sr-only">New poll</span>
+            </Link>
+          </SidebarGroupAction>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => {

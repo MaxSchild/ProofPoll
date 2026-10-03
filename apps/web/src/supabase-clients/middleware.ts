@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). Extra work here can make session refresh bugs hard
   // to diagnose.
 
-  const protectedPages = ['/dashboard'] as const;
+  const protectedPages = ['/dashboard', '/polls{/*rest}'] as const;
 
   const {
     data: { user },
