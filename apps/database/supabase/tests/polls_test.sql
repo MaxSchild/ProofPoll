@@ -1,6 +1,6 @@
 BEGIN;
 
-SELECT plan(49);
+SELECT plan(57);
 
 -- -----------------------------------------------------------------------------
 -- Fixtures: two researchers. Requests run as the roles PostgREST uses, with
@@ -129,6 +129,65 @@ SELECT is(
 );
 
 -- -----------------------------------------------------------------------------
+-- save_poll: a poll and its attention check are saved together or not at all
+-- -----------------------------------------------------------------------------
+SELECT matches(
+  public.save_poll(
+    NULL,
+    '{"title":"Saved together","questions":[{"id":"q1","text":"Pick B","options":["A","B"]}]}',
+    '{"question_id":"q1","correct_option":"B"}'
+  ),
+  '^[A-Za-z0-9]{8}$',
+  'save_poll creates a draft with its attention check'
+);
+SELECT is(
+  (SELECT c.correct_option FROM public.poll_attention_checks c
+   JOIN public.polls p ON p.id = c.poll_id WHERE p.title = 'Saved together'),
+  'B',
+  'the attention check is stored with the new poll'
+);
+SELECT throws_ok(
+  $$SELECT public.save_poll(NULL,
+    '{"title":"Half saved","questions":[{"id":"q1","text":"Pick B","options":["A","B"]}]}',
+    '{"question_id":"q1","correct_option":"C"}')$$,
+  '23514',
+  NULL,
+  'save_poll rejects an attention check that names a missing option'
+);
+SELECT is_empty(
+  $$SELECT 1 FROM public.polls WHERE title = 'Half saved'$$,
+  'a rejected attention check leaves no poll behind'
+);
+SELECT throws_ok(
+  $$SELECT public.save_poll(
+    (SELECT id FROM public.polls WHERE title = 'Saved together'),
+    '{"title":"Saved together","questions":[{"id":"q1","text":"Pick C","options":["A","C"]}]}',
+    '{"question_id":"q1","correct_option":"B"}')$$,
+  '23514',
+  NULL,
+  'an edit whose attention check does not fit the new questions is rejected'
+);
+SELECT is(
+  (SELECT c.correct_option || '/' || (p.questions -> 0 ->> 'text')
+   FROM public.poll_attention_checks c
+   JOIN public.polls p ON p.id = c.poll_id WHERE p.title = 'Saved together'),
+  'B/Pick B',
+  'a rejected edit keeps the previous questions and attention check'
+);
+
+RESET ROLE;
+SELECT pg_temp.act_as('22222222-2222-2222-2222-222222222222');
+SELECT throws_ok(
+  $$SELECT public.save_poll('poll0001',
+    '{"title":"Hijacked","questions":[{"id":"q1","text":"Q","options":["A","B"]}]}', NULL)$$,
+  '23514',
+  'This poll could not be found',
+  'save_poll cannot edit another user''s poll'
+);
+RESET ROLE;
+SELECT pg_temp.act_as('11111111-1111-1111-1111-111111111111');
+
+-- -----------------------------------------------------------------------------
 -- Drafts are private and not answerable
 -- -----------------------------------------------------------------------------
 RESET ROLE;
@@ -212,6 +271,12 @@ SELECT throws_ok(
   '23514',
   'The plan of an opened poll cannot be changed',
   'the questions of an open poll are fixed'
+);
+SELECT throws_ok(
+  $$UPDATE public.polls SET authors = '[{"name":"Someone else","affiliation":""}]' WHERE id = 'poll0001'$$,
+  '23514',
+  'The plan of an opened poll cannot be changed',
+  'the authors of an open poll are fixed'
 );
 SELECT throws_ok(
   $$UPDATE public.poll_attention_checks SET correct_option = 'Red' WHERE poll_id = 'poll0001'$$,

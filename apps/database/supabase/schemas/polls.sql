@@ -162,6 +162,7 @@ BEGIN
     OR NEW.planned_n IS DISTINCT FROM OLD.planned_n
     OR NEW.questions IS DISTINCT FROM OLD.questions
     OR NEW.exclusion_rules IS DISTINCT FROM OLD.exclusion_rules
+    OR NEW.authors IS DISTINCT FROM OLD.authors
   ) THEN
     RAISE EXCEPTION 'The plan of an opened poll cannot be changed'
       USING ERRCODE = 'check_violation';
@@ -278,6 +279,58 @@ CREATE TRIGGER guard_poll_attention_check
   BEFORE INSERT OR UPDATE OR DELETE ON public.poll_attention_checks
   FOR EACH ROW
   EXECUTE FUNCTION public.guard_poll_attention_check();
+
+-- Saving a draft and its attention check together. The check is validated
+-- against the poll's current questions, so an edit removes the old check,
+-- updates the poll and adds the new check, all in one transaction: a failure
+-- can never leave a poll without the check the researcher asked for. Runs as
+-- the caller, so row-level security still decides whose polls can be saved.
+-- p_poll: {title, description, planned_n, questions, exclusion_rules, authors}
+-- p_check: {question_id, correct_option} or null. Returns the poll id.
+CREATE OR REPLACE FUNCTION public.save_poll(p_id text, p_poll jsonb, p_check jsonb)
+RETURNS text
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = ''
+AS $$
+DECLARE
+  v_id text;
+BEGIN
+  IF p_id IS NULL THEN
+    INSERT INTO public.polls (title, description, planned_n, questions, exclusion_rules, authors)
+    VALUES (
+      p_poll ->> 'title',
+      coalesce(p_poll ->> 'description', ''),
+      (p_poll ->> 'planned_n')::integer,
+      p_poll -> 'questions',
+      coalesce(p_poll -> 'exclusion_rules', '{}'::jsonb),
+      coalesce(p_poll -> 'authors', '[]'::jsonb)
+    )
+    RETURNING id INTO v_id;
+  ELSE
+    DELETE FROM public.poll_attention_checks c WHERE c.poll_id = p_id;
+    UPDATE public.polls p
+    SET title = p_poll ->> 'title',
+        description = coalesce(p_poll ->> 'description', ''),
+        planned_n = (p_poll ->> 'planned_n')::integer,
+        questions = p_poll -> 'questions',
+        exclusion_rules = coalesce(p_poll -> 'exclusion_rules', '{}'::jsonb),
+        authors = coalesce(p_poll -> 'authors', '[]'::jsonb)
+    WHERE p.id = p_id
+    RETURNING p.id INTO v_id;
+    IF v_id IS NULL THEN
+      RAISE EXCEPTION 'This poll could not be found' USING ERRCODE = 'check_violation';
+    END IF;
+  END IF;
+
+  IF p_check IS NOT NULL AND jsonb_typeof(p_check) = 'object' THEN
+    INSERT INTO public.poll_attention_checks (poll_id, question_id, correct_option)
+    VALUES (v_id, p_check ->> 'question_id', p_check ->> 'correct_option');
+  END IF;
+
+  RETURN v_id;
+END;
+$$;
 
 -- -----------------------------------------------------------------------------
 -- Answers. Every insert, by any role and through any path, goes through
