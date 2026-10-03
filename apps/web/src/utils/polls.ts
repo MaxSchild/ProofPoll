@@ -2,11 +2,11 @@ import type { PollFormValues } from '@/utils/zod-schemas/poll';
 
 export type PollStatus = 'draft' | 'open' | 'closed';
 
-export interface PollQuestion {
+export type PollQuestion = {
   id: string;
   text: string;
   options: string[];
-}
+};
 
 export interface PollAttentionCheck {
   question_id: string;
@@ -18,10 +18,10 @@ export interface PollExclusionRules {
   exclude_failed_attention_check?: boolean;
 }
 
-export interface PollAuthor {
+export type PollAuthor = {
   name: string;
   affiliation: string;
-}
+};
 
 /** What gets stored for a poll, derived from the form values. */
 export interface PollPlan {
