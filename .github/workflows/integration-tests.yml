@@ -101,6 +101,11 @@ jobs:
           done
           echo "Inbucket is ready!"
 
+      - name: Run database tests
+        run: |
+          cd apps/database
+          supabase test db
+
       - name: Build
         run: pnpm run build
 
