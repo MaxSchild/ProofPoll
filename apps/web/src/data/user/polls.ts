@@ -1,5 +1,6 @@
 'use server';
 
+import type { Json } from '@/lib/database.types';
 import { authActionClient } from '@/lib/safe-action';
 import { createSupabaseClient } from '@/supabase-clients/server';
 import {
@@ -15,6 +16,7 @@ import {
   pollFormSchema,
   pollIdSchema,
   updatePollSchema,
+  type PollFormValues,
 } from '@/utils/zod-schemas/poll';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
@@ -22,12 +24,19 @@ import { revalidatePath } from 'next/cache';
 const CHECK_VIOLATION = '23514';
 
 /**
- * The database raises check_violation with messages written for people (for
- * example "The plan of an opened poll cannot be changed"). Those are shown as
- * they are. Anything else is logged and replaced by a generic message.
+ * The database's own rules raise check_violation with messages written for
+ * people (for example "The plan of an opened poll cannot be changed"); those
+ * are shown as they are. Table CHECK constraints share the error code but
+ * name internal constraints, so they get the generic message like any other
+ * error, which is logged.
  */
 function toUserError(error: PostgrestError, fallback: string): Error {
-  if (error.code === CHECK_VIOLATION) return new UserFacingError(error.message);
+  const isConstraintMessage =
+    error.message.startsWith('new row for relation') ||
+    error.message.includes('violates check constraint');
+  if (error.code === CHECK_VIOLATION && !isConstraintMessage) {
+    return new UserFacingError(error.message);
+  }
   console.error('Poll query failed:', error);
   return new UserFacingError(fallback);
 }
@@ -129,101 +138,44 @@ function revalidatePoll(id: string) {
   revalidatePath(`/polls/${id}`);
 }
 
+/**
+ * Saves a draft and its attention check in one database transaction
+ * (save_poll), so a failure cannot leave a poll without its check.
+ * Row-level security limits edits to the owner's drafts.
+ */
+async function savePoll(id: string | null, values: PollFormValues): Promise<string> {
+  const plan = buildPollPlan(values);
+  const supabase = await createSupabaseClient();
+  const { data, error } = await supabase.rpc('save_poll', {
+    // null creates a new poll; the generated types don't model SQL nulls.
+    p_id: id as string,
+    p_poll: {
+      title: plan.title,
+      description: plan.description,
+      planned_n: plan.planned_n,
+      questions: plan.questions,
+      exclusion_rules: plan.exclusion_rules,
+      authors: plan.authors,
+    } as unknown as Json,
+    p_check: plan.attentionCheck as unknown as Json,
+  });
+  if (error) throw toUserError(error, "The poll couldn't be saved. Try again.");
+  return data;
+}
+
 export const createPollAction = authActionClient
   .schema(pollFormSchema)
   .action(async ({ parsedInput }) => {
-    const plan = buildPollPlan(parsedInput);
-    const supabase = await createSupabaseClient();
-
-    // owner_id defaults to auth.uid() and is enforced by RLS.
-    const { data: poll, error } = await supabase
-      .from('polls')
-      .insert({
-        title: plan.title,
-        description: plan.description,
-        planned_n: plan.planned_n,
-        questions: plan.questions,
-        exclusion_rules: plan.exclusion_rules,
-        authors: plan.authors,
-      })
-      .select('id')
-      .single();
-    if (error) throw toUserError(error, "The poll couldn't be saved. Try again.");
-
-    if (plan.attentionCheck) {
-      const { error: checkError } = await supabase
-        .from('poll_attention_checks')
-        .insert({ poll_id: poll.id, ...plan.attentionCheck });
-      if (checkError) {
-        // Do not leave a draft without the check the researcher asked for.
-        await supabase.from('polls').delete().eq('id', poll.id);
-        throw toUserError(checkError, "The poll couldn't be saved. Try again.");
-      }
-    }
-
+    const id = await savePoll(null, parsedInput);
     revalidatePath('/dashboard');
-    return { id: poll.id };
+    return { id };
   });
 
 export const updatePollAction = authActionClient
   .schema(updatePollSchema)
   .action(async ({ parsedInput }) => {
     const { id, ...values } = parsedInput;
-    const plan = buildPollPlan(values);
-    const supabase = await createSupabaseClient();
-    const failed = "The poll couldn't be saved. Try again.";
-
-    const { data: previousCheck, error: readError } = await supabase
-      .from('poll_attention_checks')
-      .select('poll_id, question_id, correct_option')
-      .eq('poll_id', id)
-      .maybeSingle();
-    if (readError) throw toUserError(readError, failed);
-
-    // The database checks the attention check against the current questions,
-    // so it is removed first, the poll updated, and the new check added last.
-    if (previousCheck) {
-      const { error } = await supabase
-        .from('poll_attention_checks')
-        .delete()
-        .eq('poll_id', id);
-      if (error) throw toUserError(error, failed);
-    }
-
-    const restorePreviousCheck = async () => {
-      if (previousCheck) {
-        await supabase.from('poll_attention_checks').insert(previousCheck);
-      }
-    };
-
-    const { data: updated, error } = await supabase
-      .from('polls')
-      .update({
-        title: plan.title,
-        description: plan.description,
-        planned_n: plan.planned_n,
-        questions: plan.questions,
-        exclusion_rules: plan.exclusion_rules,
-        authors: plan.authors,
-      })
-      .eq('id', id)
-      .select('id')
-      .maybeSingle();
-    if (error || !updated) {
-      await restorePreviousCheck();
-      if (error) throw toUserError(error, failed);
-      throw new UserFacingError('This poll could not be found.');
-    }
-
-    if (plan.attentionCheck) {
-      const { error: checkError } = await supabase
-        .from('poll_attention_checks')
-        .insert({ poll_id: id, ...plan.attentionCheck });
-      if (checkError) {
-        throw toUserError(checkError, failed);
-      }
-    }
-
+    await savePoll(id, values);
     revalidatePoll(id);
     return { id };
   });

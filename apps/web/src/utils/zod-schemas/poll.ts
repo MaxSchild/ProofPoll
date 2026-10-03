@@ -3,7 +3,8 @@ import { z } from 'zod';
 export const MAX_QUESTIONS = 10;
 export const MIN_OPTIONS = 2;
 export const MAX_OPTIONS = 8;
-export const MAX_AUTHORS = 20;
+// Keeps the stored author list well under the database's 20 kB limit.
+export const MAX_AUTHORS = 10;
 
 const blank = (value: string) => value.trim().length === 0;
 
