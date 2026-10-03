@@ -1,39 +1,22 @@
-import { Separator } from '@/components/ui/separator';
-import { ArrowRight, Database, Lock, Palette, Shield, Zap } from 'lucide-react';
 import { HomeCTA } from './home-cta';
-import { HomeFeatures, type HomeFeature } from './home-features';
+import { HomeSteps, type HomeStep } from './home-steps';
 import { HomeHero } from './home-hero';
 
-const features: HomeFeature[] = [
+const steps: HomeStep[] = [
   {
-    icon: Shield,
-    title: 'Type-Safe',
-    description: 'End-to-end TypeScript with auto-generated Supabase types. Catch errors at compile time.',
+    title: 'Register',
+    description:
+      'Write down your questions, planned sample size and the rules for excluding answers. They are fixed the moment you open the poll.',
   },
   {
-    icon: Zap,
-    title: 'Modern Stack',
-    description: 'Next.js 16, TypeScript, Supabase, and Tailwind CSS — the best tools for modern web development.',
+    title: 'Record',
+    description:
+      'Every answer gets a number and a timestamp as it arrives. Nobody, including you and us, can change or delete it afterwards.',
   },
   {
-    icon: Palette,
-    title: 'UI Components',
-    description: 'Beautiful components built with Radix UI and Tailwind. Accessible and customizable.',
-  },
-  {
-    icon: Lock,
-    title: 'Authentication',
-    description: 'Magic links, OAuth providers, and email/password with protected routes — all pre-configured.',
-  },
-  {
-    icon: Database,
-    title: 'Database Ready',
-    description: 'Supabase with Row Level Security, migrations, and seed data — ready for production.',
-  },
-  {
-    icon: ArrowRight,
-    title: 'Fast Deployment',
-    description: 'Deploy to Vercel in minutes. CI/CD, preview deployments, and automatic type generation included.',
+    title: 'Check',
+    description:
+      'Reviewers compare the published dataset with the record and see at once whether any answers are missing.',
   },
 ];
 
@@ -41,11 +24,8 @@ export default function HomePage() {
   return (
     <div>
       <HomeHero />
-      <Separator />
-      <HomeFeatures features={features} />
-      <div className="border-t bg-muted/10">
-        <HomeCTA />
-      </div>
+      <HomeSteps steps={steps} />
+      <HomeCTA />
     </div>
   );
 }

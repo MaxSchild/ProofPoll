@@ -4,7 +4,6 @@ import { Menu } from 'lucide-react';
 import Link from 'next/link';
 
 import { Brand } from '@/components/brand';
-import { Github } from '@/components/icons/github';
 import { Button } from '@/components/ui/button';
 import { ModeToggle } from '@/components/ui/mode-toggle';
 import {
@@ -25,16 +24,13 @@ import {
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
-const navigation = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About' },
-];
+const navigation = [{ href: '/#how-it-works', label: 'How it works' }];
 
 export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/90 backdrop-blur-lg supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="Nextbase home" className="shrink-0">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+        <Link href="/" aria-label="AllCounted home" className="shrink-0">
           <Brand />
         </Link>
 
@@ -59,16 +55,6 @@ export default function Navbar() {
         </NavigationMenu>
 
         <div className="ml-auto flex items-center gap-1.5">
-          <Button variant="ghost" size="sm" asChild className="hidden lg:flex">
-            <Link
-              href="https://github.com/imbhargav5/nextbase-nextjs-supabase-starter"
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Github aria-hidden="true" />
-              GitHub
-            </Link>
-          </Button>
           <ModeToggle />
           <Button asChild variant="ghost" size="sm" className="hidden sm:flex">
             <Link href="/login">Sign in</Link>
@@ -90,7 +76,7 @@ export default function Navbar() {
                   <Brand />
                 </SheetTitle>
                 <SheetDescription>
-                  Everything you need to start and ship your next product.
+                  Polls that record every answer as it arrives.
                 </SheetDescription>
               </SheetHeader>
               <nav className="mt-6 grid gap-1">

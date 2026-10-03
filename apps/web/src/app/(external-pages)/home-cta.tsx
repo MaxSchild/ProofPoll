@@ -1,36 +1,28 @@
-import { ArrowRight, Rocket } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 
 export function HomeCTA() {
   return (
-    <section className="px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-      <Card className="mx-auto max-w-5xl overflow-hidden border-border/70 bg-muted/30 shadow-none">
-        <CardContent className="flex flex-col items-start gap-8 p-8 sm:p-12 md:flex-row md:items-center md:justify-between">
-          <div className="flex max-w-2xl gap-4">
-            <div className="hidden size-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground sm:flex">
-              <Rocket className="size-5" aria-hidden="true" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                Start with a foundation you can trust
-              </h2>
-              <p className="leading-7 text-muted-foreground">
-                Create an account, explore the protected workspace, and make
-                Nextbase your own.
-              </p>
-            </div>
-          </div>
-          <Button asChild size="lg" className="shrink-0">
-            <Link href="/sign-up">
-              Start building
-              <ArrowRight aria-hidden="true" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+    <section className="border-t bg-muted py-14">
+      <div className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6 lg:px-8 items-start gap-6 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-2xl space-y-2">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            Built for theses and chair studies.
+          </h2>
+          <p className="leading-7 text-muted-foreground">
+            Participants answer on their phone or a lab computer, with no account
+            and no app to install.
+          </p>
+        </div>
+        <Button asChild size="lg" className="shrink-0">
+          <Link href="/sign-up">
+            Create your first poll
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
+      </div>
     </section>
   );
 }
