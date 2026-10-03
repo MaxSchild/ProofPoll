@@ -57,7 +57,7 @@ const questionSchema = z
     }
   });
 
-const authorSchema = z
+export const authorSchema = z
   .object({
     name: z.string().max(200, 'Keep names under 200 characters'),
     affiliation: z.string().max(200, 'Keep affiliations under 200 characters'),
@@ -107,6 +107,7 @@ export const pollFormSchema = z
   });
 
 export type PollFormValues = z.infer<typeof pollFormSchema>;
+export type AuthorValues = z.infer<typeof authorSchema>;
 export type PollQuestionValues = PollFormValues['questions'][number];
 
 export const pollIdSchema = z.object({
