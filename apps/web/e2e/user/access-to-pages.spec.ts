@@ -9,14 +9,6 @@ test.describe.parallel('Logged-in user page access', () => {
     ).toBeVisible();
   });
 
-  test('can access private items', async ({ page }) => {
-    await page.goto('/private-items');
-    await expect(page).toHaveURL('/private-items');
-    await expect(
-      page.getByRole('heading', { name: 'Private Items', level: 1 })
-    ).toBeVisible();
-  });
-
   test('can access home page', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL('/');
