@@ -6,10 +6,13 @@ import { AnswerFlow } from './answer-flow';
 
 export default async function AnswerPage({
   params,
-  }: {
+  searchParams,
+}: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ lab?: string | string[] }>;
 }) {
   const { id } = await params;
+  const { lab } = await searchParams;
   const poll = await getPublicPoll(id);
   if (!poll) notFound();
 
@@ -40,6 +43,7 @@ export default async function AnswerPage({
           description: poll.description,
           questions: poll.questions,
         }}
+        lab={lab === '1'}
       />
     </div>
   );

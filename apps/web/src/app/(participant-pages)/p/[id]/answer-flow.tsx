@@ -1,15 +1,23 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { submitResponseAction } from '@/data/anon/polls';
-import { countAnswered, isComplete, type Answers } from '@/utils/answers';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  countAnswered,
+  isComplete,
+  loadReceipt,
+  saveReceipt,
+  type Answers,
+} from '@/utils/answers';
 import type { PollQuestion } from '@/utils/polls';
+import { Receipt } from './receipt';
 
 export interface AnswerFlowPoll {
   id: string;
@@ -20,11 +28,41 @@ export interface AnswerFlowPoll {
 
 const SAVE_FAILED = "Your answer wasn't saved. Check your connection and try again.";
 
-export function AnswerFlow({ poll }: { poll: AnswerFlowPoll }) {
+export function AnswerFlow({ poll, lab }: { poll: AnswerFlowPoll; lab: boolean }) {
   const [answers, setAnswers] = useState<Answers>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState<{ seq: number; createdAt: string } | null>(null);
+  const [alreadyAnswered, setAlreadyAnswered] = useState(false);
+  // Outside lab mode the device's saved receipt is only known on the client;
+  // until it has been read, a placeholder avoids flashing the form.
+  const [checked, setChecked] = useState(lab);
+  const [round, setRound] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (lab) return;
+    const saved = loadReceipt(poll.id);
+    if (saved) {
+      setReceipt(saved);
+      setAlreadyAnswered(true);
+    }
+    setChecked(true);
+  }, [lab, poll.id]);
+
+  useEffect(() => {
+    // After "Next participant", the first option of the first question.
+    if (round === 0) return;
+    formRef.current?.querySelector<HTMLElement>('[role="radio"]')?.focus();
+  }, [round]);
+
+  function nextParticipant() {
+    setAnswers({});
+    setError(null);
+    setReceipt(null);
+    setAlreadyAnswered(false);
+    setRound((current) => current + 1);
+  }
 
   const total = poll.questions.length;
   const answered = countAnswered(poll.questions, answers);
@@ -38,7 +76,10 @@ export function AnswerFlow({ poll }: { poll: AnswerFlowPoll }) {
     try {
       const result = await submitResponseAction({ pollId: poll.id, answers });
       if (result?.data) {
-        setReceipt({ seq: result.data.seq, createdAt: result.data.createdAt });
+        const saved = { seq: result.data.seq, createdAt: result.data.createdAt };
+        // Lab computers are shared, so they are never locked.
+        if (!lab) saveReceipt(poll.id, saved);
+        setReceipt(saved);
       } else {
         setError(result?.serverError ?? SAVE_FAILED);
       }
@@ -57,14 +98,26 @@ export function AnswerFlow({ poll }: { poll: AnswerFlowPoll }) {
     }
   }
 
+  if (!checked) {
+    return (
+      <div aria-busy="true" className="space-y-4 sm:rounded-xl sm:border sm:bg-card sm:p-8">
+        <Skeleton className="h-8 w-2/3" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-14 w-full" />
+        <Skeleton className="h-14 w-full" />
+      </div>
+    );
+  }
+
   if (receipt) {
     return (
-      <div className="sm:rounded-xl sm:border sm:bg-card sm:p-8" role="status">
-        <h1 className="text-2xl font-semibold tracking-tight">Thank you.</h1>
-        <p>
-          Your answer is <span className="font-mono">#{receipt.seq}</span> in this poll.
-        </p>
-      </div>
+      <Receipt
+        seq={receipt.seq}
+        createdAt={receipt.createdAt}
+        alreadyAnswered={alreadyAnswered}
+        lab={lab}
+        onNextParticipant={nextParticipant}
+      />
     );
   }
 
@@ -78,7 +131,7 @@ export function AnswerFlow({ poll }: { poll: AnswerFlowPoll }) {
           </p>
         ) : null}
       </header>
-      <form onSubmit={submit} onKeyDown={guardEnter} className="mt-6 space-y-6 border-t pt-6">
+      <form ref={formRef} key={round} onSubmit={submit} onKeyDown={guardEnter} className="mt-6 space-y-6 border-t pt-6">
         <p aria-live="polite" className="text-sm text-muted-foreground">
           <span className="font-mono tabular-nums">{answered}</span> of{' '}
           <span className="font-mono tabular-nums">{total}</span>{' '}
