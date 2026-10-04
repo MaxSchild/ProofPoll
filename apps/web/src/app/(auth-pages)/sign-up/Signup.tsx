@@ -2,6 +2,7 @@
 
 import { useAction } from 'next-safe-action/hooks';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -24,6 +25,7 @@ interface SignUpProps {
 }
 
 export function SignUp({ next }: SignUpProps) {
+  const router = useRouter();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const toastRef = useRef<string | number | undefined>(undefined);
 
@@ -55,9 +57,13 @@ export function SignUp({ next }: SignUpProps) {
       onExecute: () => {
         toastRef.current = toast.loading('Creating account...');
       },
-      onSuccess: () => {
+      onSuccess: ({ data }) => {
         toast.success('Account created', { id: toastRef.current });
         toastRef.current = undefined;
+        if (data?.signedIn) {
+          router.push('/dashboard');
+          return;
+        }
         setSuccessMessage('A confirmation link has been sent to your email.');
       },
       onError: ({ error }) => {

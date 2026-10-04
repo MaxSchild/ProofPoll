@@ -2,6 +2,7 @@
 import { actionClient } from '@/lib/safe-action';
 import { createSupabaseClient } from '@/supabase-clients/server';
 import { toSiteURL } from '@/utils/helpers';
+import { UserFacingError } from '@/utils/user-facing-error';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
@@ -14,7 +15,7 @@ const signUpSchema = z.object({
  * @param {Object} params - The parameters for sign up.
  * @param {string} params.email - The user's email address.
  * @param {string} params.password - The user's password (minimum 3 characters).
- * @returns {Promise<Object>} The data returned from the sign-up process.
+ * @returns {Promise<{signedIn: boolean}>} Whether the user is signed in already (no email confirmation needed).
  * @throws {Error} If there's an error during sign up.
  */
 export const signUpAction = actionClient
@@ -30,11 +31,15 @@ export const signUpAction = actionClient
       },
     });
 
+    // Supabase's auth messages ("User already registered", "email rate
+    // limit exceeded") are written for users, so they are shown as they are.
     if (error) {
-      throw new Error(error.message);
+      throw new UserFacingError(error.message);
     }
 
-    return data;
+    // With email confirmation off (as in production), sign-up returns a
+    // session and the user is already signed in.
+    return { signedIn: data.session !== null };
   });
 
 const signInSchema = z.object({
