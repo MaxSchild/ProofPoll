@@ -31,4 +31,15 @@ test.describe.parallel('Anonymous user public pages', () => {
     await expect(page.getByLabel('Password')).toBeVisible();
     await expect(page.getByRole('tab')).toHaveCount(0);
   });
+
+  test('sees example searches on the verify page', async ({ page }) => {
+    await page.goto('/verify');
+    await expect(page.getByRole('heading', { name: 'Try an example' })).toBeVisible();
+    await page.getByRole('link', { name: /Students will pay for reusable cups/ }).click();
+    await expect(page).toHaveURL(/\/verify\?q=Students/);
+    await expect(page.getByLabel('What do you know about the paper?')).toHaveValue(
+      'Students will pay for reusable cups'
+    );
+    await expect(page.getByRole('heading', { name: 'Try an example' })).toHaveCount(0);
+  });
 });

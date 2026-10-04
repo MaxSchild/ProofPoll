@@ -121,6 +121,10 @@ test.describe('Logged-in user verifies a paper against the record', () => {
     await expect(review.getByText('Ada Author (WHU)')).toBeVisible();
     await expect(review.getByText('Matched automatically')).toBeVisible();
     await expect(review.getByText('Inconsistent', { exact: true })).toBeVisible();
+    await expect(review.getByRole('link', { name: "Plan and every answer's fingerprint" })).toHaveAttribute(
+      'href',
+      `/s/${pollId}`
+    );
     // Coffee and Tea 2 each of 4; Yes 3, No 1 (counts before exclusions).
     await expect(review.getByText('2 · 50%')).toHaveCount(2);
     await expect(review.getByText('3 · 75%')).toBeVisible();
