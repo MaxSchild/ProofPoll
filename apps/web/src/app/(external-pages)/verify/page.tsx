@@ -48,7 +48,7 @@ async function SearchForm({ searchParams }: { searchParams: SearchParams }) {
 
 async function Results({ searchParams }: { searchParams: SearchParams }) {
   const query = queryOf((await searchParams).q);
-  if (!query) return null;
+  if (!query) return <Examples />;
   const { candidates } = await searchPapers(query);
 
   return (
@@ -87,6 +87,36 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
           ))}
         </ul>
       )}
+    </section>
+  );
+}
+
+// The example studies seeded on the demo deployment (apps/web/scripts/seed-demo.mjs),
+// one consistent and one inconsistent, as searches someone might paste.
+const EXAMPLE_QUERIES = [
+  { label: 'A title', query: 'Students will pay for reusable cups' },
+  { label: 'A DOI', query: 'https://doi.org/10.5555/allcounted.example.remote' },
+];
+
+function Examples() {
+  return (
+    <section aria-labelledby="examples-heading" className="space-y-3">
+      <h2 id="examples-heading" className="text-sm font-medium text-muted-foreground">
+        Try an example
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {EXAMPLE_QUERIES.map((example) => (
+          <li key={example.query}>
+            <Link
+              href={`/verify?q=${encodeURIComponent(example.query)}`}
+              className="inline-flex max-w-full items-center gap-2 rounded-md border bg-card px-3 py-2 text-sm hover:bg-muted"
+            >
+              <span className="text-muted-foreground">{example.label}:</span>
+              <span className="truncate">{example.query}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
