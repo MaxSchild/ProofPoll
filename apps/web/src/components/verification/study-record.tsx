@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -41,7 +42,11 @@ export function StudyRecord({ study, index }: { study: StudySummary; index: numb
 
       <section aria-label="Verdict" className="rounded-md bg-muted/40 p-4">
         {study.validation ? (
-          <StudyVerdict validation={study.validation} questions={study.questions} />
+          <StudyVerdict
+            validation={study.validation}
+            questions={study.questions}
+            checkHref={`/s/${study.poll_id}/check`}
+          />
         ) : (
           <p className="text-sm text-muted-foreground">No verdict for this study.</p>
         )}
@@ -53,6 +58,17 @@ export function StudyRecord({ study, index }: { study: StudySummary; index: numb
           {study.planned_n ? (
             <span className="text-muted-foreground"> of {study.planned_n} planned</span>
           ) : null}
+        </Row>
+        <Row label="Record on Solana">
+          <Link
+            href={`/s/${study.poll_id}`}
+            className="font-medium text-primary underline underline-offset-4"
+          >
+            Plan and every answer&apos;s fingerprint
+          </Link>
+          <p className="text-sm text-muted-foreground">
+            Written to Solana devnet as each answer arrived, so none can be added or removed later.
+          </p>
         </Row>
         <Row label="Registered">
           <Time iso={study.opened_at} />

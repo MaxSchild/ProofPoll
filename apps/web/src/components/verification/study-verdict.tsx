@@ -1,4 +1,5 @@
 import { Check, Minus, X } from 'lucide-react';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 import type { PollQuestion } from '@/utils/polls';
@@ -37,9 +38,12 @@ function LevelHeading({ level, ran }: { level: string; ran: boolean }) {
 export function StudyVerdict({
   validation,
   questions,
+  checkHref,
 }: {
   validation: StudyValidation;
   questions: PollQuestion[];
+  /** Where anyone can run the dataset check against the record on Solana. */
+  checkHref?: string;
 }) {
   const { count, results } = validation.details;
   const gap = describeCountGap(count);
@@ -111,6 +115,14 @@ export function StudyVerdict({
         <LevelHeading level="dataset" ran={false} />
         <p className="pl-6 text-sm text-muted-foreground">
           Needs the published dataset, compared row by row with the record.
+          {checkHref ? (
+            <>
+              {' '}
+              <Link href={checkHref} className="font-medium text-primary underline underline-offset-4">
+                Check a dataset against the record on Solana
+              </Link>
+            </>
+          ) : null}
         </p>
       </div>
     </div>
