@@ -3,11 +3,12 @@ import 'server-only';
 import { randomBytes } from 'node:crypto';
 
 import {
-  isConfirmed,
   isSolanaConfigured,
+  MemoFailedError,
   MemoNotConfirmedError,
   newRecordKey,
   sendMemo,
+  sentStatus,
 } from '@/lib/solana/memo';
 import { createSupabaseAdminClient } from '@/supabase-clients/admin';
 import { answerMemo, leafHash, planHash, planMemo } from '@/utils/fingerprints';
@@ -49,22 +50,33 @@ async function writeMemo(
   recordSecret: string,
   save: (fields: { status: RecordStatus; tx?: string; recorded_at?: string }) => Promise<void>
 ): Promise<RecordOutcome> {
-  if (existingTx && (await isConfirmed(existingTx).catch(() => false))) {
-    await save({ status: 'recorded', tx: existingTx, recorded_at: new Date().toISOString() });
-    return { status: 'recorded', tx: existingTx };
+  if (existingTx) {
+    const earlier = await sentStatus(existingTx);
+    if (earlier === 'confirmed') {
+      await save({ status: 'recorded', tx: existingTx, recorded_at: new Date().toISOString() });
+      return { status: 'recorded', tx: existingTx };
+    }
+    // It may still land: sending another copy could record it twice.
+    if (earlier === 'unknown') return { status: 'pending', tx: existingTx };
   }
-  // Retried once after a pause (spec §6.2): the public devnet RPC answers
-  // bursts with 429s.
+  // Retried once after a pause (spec §6.2) when sending itself failed: the
+  // public devnet RPC answers bursts with 429s. Once a transaction is sent it
+  // is not sent again; a later retry checks whether it landed (above).
   for (let attempt = 1; ; attempt += 1) {
+    let sent = null as string | null;
     try {
-      const tx = await sendMemo(memo, recordSecret, (signature) =>
-        save({ status: 'pending', tx: signature })
-      );
+      const tx = await sendMemo(memo, recordSecret, async (signature) => {
+        sent = signature;
+        await save({ status: 'pending', tx: signature });
+      });
       await save({ status: 'recorded', tx, recorded_at: new Date().toISOString() });
       return { status: 'recorded', tx };
     } catch (error) {
       if (error instanceof MemoNotConfirmedError) {
         return { status: 'pending', tx: error.signature };
+      }
+      if (sent && !(error instanceof MemoFailedError)) {
+        return { status: 'pending', tx: sent };
       }
       if (attempt < 2) {
         await new Promise((resolve) => setTimeout(resolve, 1500));
