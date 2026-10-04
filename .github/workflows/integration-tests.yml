@@ -106,6 +106,19 @@ jobs:
           cd apps/database
           supabase test db
 
+      # Next inlines NEXT_PUBLIC_* at build time, and with NODE_ENV=test it
+      # would otherwise take the placeholders from apps/web/.env.test.
+      - name: Export local Supabase settings
+        run: |
+          cd apps/database
+          eval "$(supabase status --output env | grep -E '^(API_URL|PUBLISHABLE_KEY|SECRET_KEY)=')"
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL/"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+            echo "SUPABASE_SECRET_KEY=$SECRET_KEY"
+            echo "NEXT_PUBLIC_SITE_URL=http://localhost:3100/"
+          } >> "$GITHUB_ENV"
+
       - name: Build
         run: pnpm run build
 
