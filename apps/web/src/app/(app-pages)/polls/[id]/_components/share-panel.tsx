@@ -8,6 +8,7 @@ import { CopyField } from '@/components/copy-field';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import type { PollStatus } from '@/utils/polls';
+import { PRODUCT_SLUG } from '@/constants';
 
 interface SharePanelProps {
   pollId: string;
@@ -35,7 +36,7 @@ export function SharePanel({ pollId, status, answerUrl, labUrl }: SharePanelProp
     if (!canvas) return;
     const link = document.createElement('a');
     link.href = canvas.toDataURL('image/png');
-    link.download = `allcounted-${pollId}-qr.png`;
+    link.download = `${PRODUCT_SLUG}-${pollId}-qr.png`;
     link.click();
   }
 

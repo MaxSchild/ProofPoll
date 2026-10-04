@@ -9,9 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { searchPapers } from '@/data/anon/paper-queries';
 import { formatDate } from '@/utils/format';
+import { PRODUCT_NAME } from '@/constants';
 
 export const metadata: Metadata = {
-  title: 'Verify a paper · AllCounted',
+  title: 'Verify a paper',
   description:
     'Find the polls behind a paper and see whether it reports the data as it was recorded.',
 };
@@ -36,7 +37,7 @@ async function SearchForm({ searchParams }: { searchParams: SearchParams }) {
         defaultValue={query}
         rows={3}
         maxLength={2000}
-        placeholder="Paste a DOI, a title, authors, a full citation or an AllCounted link"
+        placeholder={`Paste a DOI, a title, authors, a full citation or a ${PRODUCT_NAME} link`}
       />
       <Button type="submit">
         <Search aria-hidden="true" />
@@ -62,7 +63,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
       </h2>
       {candidates.length === 0 ? (
         <p className="text-sm text-muted-foreground">
-          Only papers whose authors used AllCounted and that have been published are listed.
+          Only papers whose authors used {PRODUCT_NAME} and that have been published are listed.
           Try the DOI or the exact title.
         </p>
       ) : (
@@ -95,7 +96,7 @@ async function Results({ searchParams }: { searchParams: SearchParams }) {
 // one consistent and one inconsistent, as searches someone might paste.
 const EXAMPLE_QUERIES = [
   { label: 'A title', query: 'Students will pay for reusable cups' },
-  { label: 'A DOI', query: 'https://doi.org/10.5555/allcounted.example.remote' },
+  { label: 'A DOI', query: 'https://doi.org/10.5555/proofpoll.example.remote' },
 ];
 
 function Examples() {

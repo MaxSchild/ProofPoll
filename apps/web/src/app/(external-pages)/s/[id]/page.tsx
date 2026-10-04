@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getAnswerRecords, getPollRecord } from '@/data/anon/record-queries';
 import { formatDateTime } from '@/utils/format';
 
-export const metadata: Metadata = { title: 'Public record · AllCounted' };
+export const metadata: Metadata = { title: 'Public record' };
 
 // The verifier's view (spec §3.4): the plan as registered, and every answer's
 // fingerprint with its transaction on Solana devnet.

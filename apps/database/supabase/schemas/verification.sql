@@ -1054,7 +1054,7 @@ AS $$
 $$;
 
 -- Candidates for the public search: published papers matching a DOI, a
--- paper or poll id (from an AllCounted link), or words of the title and
+-- paper or poll id (from a ProofPoll link), or words of the title and
 -- authors. Best matches first, at most 5.
 CREATE OR REPLACE FUNCTION public.search_published_papers(
   p_dois text[],

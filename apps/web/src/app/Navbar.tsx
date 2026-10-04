@@ -23,6 +23,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { PRODUCT_NAME } from '@/constants';
 
 const navigation = [
   { href: '/#how-it-works', label: 'How it works' },
@@ -33,7 +34,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/90 backdrop-blur-lg supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="AllCounted home" className="shrink-0">
+        <Link href="/" aria-label={`${PRODUCT_NAME} home`} className="shrink-0">
           <Brand />
         </Link>
 

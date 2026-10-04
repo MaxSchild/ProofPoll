@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Brand } from '@/components/brand';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { PRODUCT_NAME } from '@/constants';
 
 const footerLinks = [
   { href: '/#how-it-works', label: 'How it works' },
@@ -16,7 +17,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-start">
           <div className="max-w-md space-y-3">
-            <Link href="/" aria-label="AllCounted home" className="inline-flex">
+            <Link href="/" aria-label={`${PRODUCT_NAME} home`} className="inline-flex">
               <Brand showTagline />
             </Link>
             <p className="text-sm leading-6 text-muted-foreground">
@@ -34,7 +35,7 @@ export default function Footer() {
         </div>
         <Separator className="my-8" />
         <div className="flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>AllCounted · a prototype for the WHU Solana challenge</p>
+          <p>{PRODUCT_NAME} · a prototype for the WHU Solana challenge</p>
           <p>Answers are never shown publicly, only counted.</p>
         </div>
       </div>

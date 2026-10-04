@@ -4,13 +4,13 @@ test.describe.parallel('Anonymous user gated page access', () => {
   test('is redirected from dashboard to login', async ({ page }) => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
-    await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
+    await expect(page.getByText('Sign in to ProofPoll')).toBeVisible();
   });
 
   test('is redirected from new poll to login', async ({ page }) => {
     await page.goto('/polls/new');
     await expect(page).toHaveURL(/login/, { timeout: 10000 });
-    await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
+    await expect(page.getByText('Sign in to ProofPoll')).toBeVisible();
   });
 
   test('is redirected from a poll page to login', async ({ page }) => {

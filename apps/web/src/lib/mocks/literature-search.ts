@@ -5,7 +5,7 @@ import 'server-only';
  *
  * Real version: a scheduled job queries Crossref and OpenAlex every day for
  * published works whose reference lists or open-access full text cite an
- * AllCounted link (/papers/<id> or /p/<poll id>), and for works whose title
+ * ProofPoll link (/papers/<id> or /p/<poll id>), and for works whose title
  * and authors match a paper still in review.
  *
  * Here: run on demand from the paper page, it always "finds" the paper
@@ -24,7 +24,7 @@ export async function findPublishedVersion(paper: {
   title: string;
 }): Promise<LiteratureMatch | null> {
   return {
-    doi: `10.5555/allcounted.${paper.id.toLowerCase()}`,
+    doi: `10.5555/proofpoll.${paper.id.toLowerCase()}`,
     title: paper.title,
     source: 'crossref',
     reason: 'title_authors',

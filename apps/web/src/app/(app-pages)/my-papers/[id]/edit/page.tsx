@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/page-header';
 import { getPaper, getSelectablePolls } from '@/data/user/paper-queries';
 import { PaperForm } from '../../_components/paper-form';
 
-export const metadata: Metadata = { title: 'Edit paper · AllCounted' };
+export const metadata: Metadata = { title: 'Edit paper' };
 
 export default async function EditPaperPage({
   params,

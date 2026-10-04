@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getPollRecord } from '@/data/anon/record-queries';
 import { CheckForm } from './check-form';
 
-export const metadata: Metadata = { title: 'Check a dataset · AllCounted' };
+export const metadata: Metadata = { title: 'Check a dataset' };
 
 async function Check({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

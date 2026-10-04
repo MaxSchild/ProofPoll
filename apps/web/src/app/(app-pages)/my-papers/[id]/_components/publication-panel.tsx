@@ -25,6 +25,7 @@ import {
 } from '@/data/user/papers';
 import { formatDate, formatDateTime } from '@/utils/format';
 import type { PaperStatus } from '@/utils/verification';
+import { PRODUCT_NAME } from '@/constants';
 
 type ActionResult = { serverError?: string; validationErrors?: unknown } | undefined;
 
@@ -153,7 +154,7 @@ function Detection({ paperId }: { paperId: string }) {
         </p>
         <p className="text-sm text-muted-foreground">
           Every day we search Crossref and OpenAlex for published papers that cite your
-          AllCounted links or match this title and authors. If we find one, we ask you to
+          {PRODUCT_NAME} links or match this title and authors. If we find one, we ask you to
           confirm. Without a reply within 14 days, the page goes public anyway, marked
           “matched automatically”.
         </p>
@@ -202,7 +203,7 @@ function PendingMatch({ match }: { match: DoiMatch }) {
           <span className="font-medium text-foreground">“{match.matchedTitle}”</span> with DOI{' '}
           <span className="font-mono text-foreground">{match.doi}</span>
           {match.reason === 'cites_link'
-            ? ', which cites an AllCounted link of this paper.'
+            ? `, which cites a ${PRODUCT_NAME} link of this paper.`
             : ', matching this paper’s title and authors.'}
         </p>
         <p>

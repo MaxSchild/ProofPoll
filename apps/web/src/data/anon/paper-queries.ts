@@ -84,7 +84,7 @@ export async function getPublishedPaper(id: string): Promise<PublishedPaper | nu
 
 /**
  * Published papers matching whatever someone pasted: a DOI, a title,
- * authors, a citation or an AllCounted link. The identifiers are extracted
+ * authors, a citation or a ProofPoll link. The identifiers are extracted
  * by a mock of the LLM step (lib/mocks/identifier-extraction.ts).
  */
 export async function searchPapers(

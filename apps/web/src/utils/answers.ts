@@ -1,4 +1,5 @@
 import type { PollQuestion } from '@/utils/polls';
+import { PRODUCT_SLUG } from '@/constants';
 
 export type Answers = Record<string, string>;
 
@@ -31,7 +32,7 @@ const RECORD_STATUSES: readonly string[] = ['recorded', 'pending', 'failed', 'di
 export const LAB_RESET_SECONDS = 15;
 
 export function receiptStorageKey(pollId: string): string {
-  return `allcounted:receipt:${pollId}`;
+  return `${PRODUCT_SLUG}:receipt:${pollId}`;
 }
 
 /** Parses what was saved in localStorage; anything unexpected gives null. */

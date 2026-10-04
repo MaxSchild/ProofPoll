@@ -19,7 +19,7 @@ import { PaperStatusBadge } from '@/components/verification/paper-status-badge';
 import { getMyPapers } from '@/data/user/paper-queries';
 import { formatDate } from '@/utils/format';
 
-export const metadata: Metadata = { title: 'Your papers · AllCounted' };
+export const metadata: Metadata = { title: 'Your papers' };
 
 async function PaperList() {
   const papers = await getMyPapers();

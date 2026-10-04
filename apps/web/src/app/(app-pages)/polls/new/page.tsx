@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { PageHeader } from '@/components/page-header';
 import { PollForm } from '../_components/poll-form';
 
-export const metadata: Metadata = { title: 'New poll · AllCounted' };
+export const metadata: Metadata = { title: 'New poll' };
 
 export default function NewPollPage() {
   return (

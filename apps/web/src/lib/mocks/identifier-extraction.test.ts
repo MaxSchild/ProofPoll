@@ -11,9 +11,9 @@ describe('extractIdentifiers', () => {
     expect(result.terms).toEqual(['author', 'commuting', 'mood', 'management', 'science']);
   });
 
-  test('finds paper and poll ids in AllCounted links', () => {
+  test('finds paper and poll ids in ProofPoll links', () => {
     const result = extractIdentifiers(
-      'Data: https://allcounted.app/papers/AbCd1234 and https://allcounted.app/p/XyZ98765'
+      'Data: https://proofpoll.app/papers/AbCd1234 and https://proofpoll.app/p/XyZ98765'
     );
     expect(result.ids).toEqual(['AbCd1234', 'XyZ98765']);
     expect(result.dois).toEqual([]);

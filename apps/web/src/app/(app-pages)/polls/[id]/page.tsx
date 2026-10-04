@@ -14,7 +14,7 @@ import { RecordPanel } from './_components/record-panel';
 import { ResultsPanel } from './_components/results-panel';
 import { SharePanel } from './_components/share-panel';
 
-export const metadata: Metadata = { title: 'Poll · AllCounted' };
+export const metadata: Metadata = { title: 'Poll' };
 
 export default async function PollPage({
   params,

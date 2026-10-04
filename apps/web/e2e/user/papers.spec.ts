@@ -132,7 +132,7 @@ test.describe('Logged-in user verifies a paper against the record', () => {
     // Search by citation, DOI and poll link.
     for (const query of [
       `Author, A. (2026). Coffee habits ${stamp}. Some Journal.`,
-      `https://doi.org/10.5555/allcounted.${paperId.toLowerCase()}`,
+      `https://doi.org/10.5555/proofpoll.${paperId.toLowerCase()}`,
       `Data at http://localhost:3100/p/${pollId}`,
     ]) {
       await review.goto(`/verify?q=${encodeURIComponent(query)}`);

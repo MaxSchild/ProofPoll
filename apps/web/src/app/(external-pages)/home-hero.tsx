@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { EXAMPLE_POLL_ID } from '@/constants';
+import { EXAMPLE_POLL_ID, PRODUCT_NAME } from '@/constants';
 
 export function HomeHero() {
   return (
@@ -15,7 +15,7 @@ export function HomeHero() {
               Nobody records survey answers as they arrive.
             </h1>
             <p className="max-w-xl text-pretty text-lg leading-8 text-muted-foreground">
-              AllCounted keeps a numbered, timestamped record of every answer
+              {PRODUCT_NAME} keeps a numbered, timestamped record of every answer
               the moment it is given, so reviewers can check that none were
               dropped before the results were published.
             </p>

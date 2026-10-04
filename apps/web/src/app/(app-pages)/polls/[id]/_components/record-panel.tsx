@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import type { AnswerRecord, PollRecord } from '@/data/anon/record-queries';
 import type { PollStatus } from '@/utils/polls';
 import { RetryRecordsButton } from './retry-records-button';
+import { PRODUCT_NAME } from '@/constants';
 
 export function RecordPanel({
   pollId,
@@ -54,7 +55,7 @@ export function RecordPanel({
         <h2 className="text-lg font-semibold">Answers</h2>
         <p className="text-sm text-muted-foreground">
           Each answer&apos;s fingerprint (a salted SHA-256 of its answers) is recorded on Solana
-          devnet when it arrives. The answers themselves never leave AllCounted.
+          devnet when it arrives. The answers themselves never leave {PRODUCT_NAME}.
         </p>
         <AnswerRecordsTable records={answers} />
       </section>

@@ -12,7 +12,7 @@ import { DraftPaperActions } from './_components/paper-actions';
 import { PublicationPanel } from './_components/publication-panel';
 import { ReviewRounds } from './_components/review-rounds';
 
-export const metadata: Metadata = { title: 'Paper · AllCounted' };
+export const metadata: Metadata = { title: 'Paper' };
 
 function Section({
   id,

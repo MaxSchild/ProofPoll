@@ -8,13 +8,13 @@ import { parseDoi } from '@/utils/verification';
  * a full citation) and returns the identifiers; DOIs are resolved through
  * Crossref to their title and authors before matching.
  *
- * Here: regular expressions find DOIs and AllCounted links, and the other
+ * Here: regular expressions find DOIs and ProofPoll links, and the other
  * words (minus common ones) become search terms for titles and authors.
  */
 
 export interface PaperIdentifiers {
   dois: string[];
-  /** Paper or poll ids from AllCounted links. */
+  /** Paper or poll ids from ProofPoll links. */
   ids: string[];
   terms: string[];
 }

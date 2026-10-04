@@ -9,8 +9,9 @@ import { ManuscriptCheck } from '@/components/verification/manuscript-check';
 import { StudyRecord } from '@/components/verification/study-record';
 import { getPublishedPaper } from '@/data/anon/paper-queries';
 import { formatDate, formatDateTime } from '@/utils/format';
+import { PRODUCT_NAME } from '@/constants';
 
-export const metadata: Metadata = { title: 'Published paper · AllCounted' };
+export const metadata: Metadata = { title: 'Published paper' };
 
 async function Paper({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -61,7 +62,7 @@ async function Paper({ params }: { params: Promise<{ id: string }> }) {
         <p className="max-w-2xl text-sm text-muted-foreground">
           The verdicts below compare what the manuscript of review round {paper.version}{' '}
           (confirmed <time dateTime={paper.confirmedAt}>{formatDateTime(paper.confirmedAt)}</time>)
-          reports with the answers AllCounted recorded as they arrived.
+          reports with the answers {PRODUCT_NAME} recorded as they arrived.
         </p>
       </header>
 

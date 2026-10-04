@@ -1,6 +1,7 @@
 import { ListChecks } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
+import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants';
 
 interface BrandProps {
   className?: string;
@@ -15,11 +16,11 @@ export function Brand({ className, showTagline = false }: BrandProps) {
       </span>
       <span className="grid min-w-0 text-left leading-tight">
         <span className="truncate text-base font-semibold tracking-tight">
-          AllCounted
+          {PRODUCT_NAME}
         </span>
         {showTagline ? (
           <span className="truncate text-xs text-muted-foreground">
-            Every answer, counted.
+            {PRODUCT_TAGLINE}
           </span>
         ) : null}
       </span>
