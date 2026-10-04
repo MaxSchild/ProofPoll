@@ -1,96 +1,22 @@
-import { expect, request, type Page } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
-const INBUCKET_URL = 'http://localhost:54324';
-
-interface InbucketMessage {
-  ID: string;
-  Created: string;
-}
-
-interface InbucketMessageDetail {
-  Text: string;
-}
-
-async function getLatestEmailForAddress(emailAddress: string): Promise<InbucketMessageDetail | null> {
-  const mailbox = emailAddress.split('@')[0];
-  const mailboxQuery = encodeURIComponent(mailbox);
-  const requestContext = await request.newContext();
-
-  try {
-    for (let attempt = 0; attempt < 20; attempt++) {
-      if (attempt > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      const response = await requestContext
-        .get(`${INBUCKET_URL}/api/v1/search?query=${mailboxQuery}&limit=20`)
-        .catch(() => null);
-      if (!response?.ok()) continue;
-
-      const body = (await response.json().catch(() => null)) as
-        | { messages?: InbucketMessage[] }
-        | null;
-      const messages = body?.messages ?? [];
-      if (!messages.length) continue;
-
-      const latest = [...messages].sort(
-        (a, b) => new Date(b.Created).getTime() - new Date(a.Created).getTime()
-      )[0];
-      const detailResponse = await requestContext
-        .get(`${INBUCKET_URL}/api/v1/message/${latest.ID}`)
-        .catch(() => null);
-      if (!detailResponse?.ok()) continue;
-
-      const detail = (await detailResponse.json().catch(() => null)) as
-        | InbucketMessageDetail
-        | null;
-      if (detail?.Text) {
-        return detail;
-      }
-    }
-    return null;
-  } finally {
-    await requestContext.dispose();
-  }
-}
-
-function extractConfirmationLink(text: string, siteURL: string): string | null {
-  const patterns = [
-    /Log In \( (.+) \)/i,
-    /Confirm your email address[^"]*"(https?:\/\/[^"]+)"/i,
-    /(https?:\/\/127\.0\.0\.1[^\s"<]+)/i,
-    /(https?:\/\/localhost[^\s"<]+)/i,
-  ];
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (!match) continue;
-
-    const link = new URL(match[1]);
-    link.searchParams.set('redirect_to', new URL('/auth/callback', siteURL).toString());
-    return link.toString();
-  }
-  return null;
-}
-
+/**
+ * Signs up with email and password. Email confirmation is off (locally and
+ * in production), so the new user lands on the dashboard straight away.
+ */
 export async function signupUserHelper({
   page,
   emailAddress,
+  password = 'Password-123!',
 }: {
   page: Page;
   emailAddress: string;
+  password?: string;
 }): Promise<void> {
   await page.goto('/sign-up');
-  await page.getByRole('tab', { name: 'Magic Link' }).click();
-  await page.getByPlaceholder(/email/i).fill(emailAddress);
-  await page.getByRole('button', { name: /send magic link|sign up/i }).click();
-  await expect(page.getByText('Confirmation Link Sent')).toBeVisible();
-
-  const emailDetail = await getLatestEmailForAddress(emailAddress);
-  if (!emailDetail) throw new Error('No confirmation email received');
-
-  const link = extractConfirmationLink(emailDetail.Text, page.url());
-  if (!link) throw new Error('Could not find confirmation link in email');
-
-  await page.goto(link);
-  await page.waitForURL(/\/dashboard(?:[/?#]|$)/, { timeout: 30000 });
+  await page.waitForLoadState('networkidle');
+  await page.getByLabel('Email address').fill(emailAddress);
+  await page.getByLabel('Password').fill(password);
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/, { timeout: 30000 });
 }

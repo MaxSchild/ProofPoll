@@ -18,7 +18,9 @@ test.describe.parallel('Anonymous user public pages', () => {
 
     await expect(page).toHaveURL('/login');
     await expect(page.getByText('Sign in to AllCounted')).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    // Only email and password: no magic link or social sign-in.
+    await expect(page.getByRole('tab')).toHaveCount(0);
   });
 
   test('can access the sign-up page', async ({ page }) => {
@@ -26,6 +28,7 @@ test.describe.parallel('Anonymous user public pages', () => {
 
     await expect(page).toHaveURL('/sign-up');
     await expect(page.getByText('Create your AllCounted account')).toBeVisible();
-    await expect(page.getByRole('tab', { name: 'Magic Link' })).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+    await expect(page.getByRole('tab')).toHaveCount(0);
   });
 });

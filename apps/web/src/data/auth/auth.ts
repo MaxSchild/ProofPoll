@@ -2,6 +2,7 @@
 import { actionClient } from '@/lib/safe-action';
 import { createSupabaseClient } from '@/supabase-clients/server';
 import { toSiteURL } from '@/utils/helpers';
+import { UserFacingError } from '@/utils/user-facing-error';
 import { z } from 'zod';
 
 const signUpSchema = z.object({
@@ -14,7 +15,7 @@ const signUpSchema = z.object({
  * @param {Object} params - The parameters for sign up.
  * @param {string} params.email - The user's email address.
  * @param {string} params.password - The user's password (minimum 3 characters).
- * @returns {Promise<Object>} The data returned from the sign-up process.
+ * @returns {Promise<{signedIn: boolean}>} Whether the user is signed in already (no email confirmation needed).
  * @throws {Error} If there's an error during sign up.
  */
 export const signUpAction = actionClient
@@ -30,11 +31,15 @@ export const signUpAction = actionClient
       },
     });
 
+    // Supabase's auth messages ("User already registered", "email rate
+    // limit exceeded") are written for users, so they are shown as they are.
     if (error) {
-      throw new Error(error.message);
+      throw new UserFacingError(error.message);
     }
 
-    return data;
+    // With email confirmation off (as in production), sign-up returns a
+    // session and the user is already signed in.
+    return { signedIn: data.session !== null };
   });
 
 const signInSchema = z.object({
@@ -62,73 +67,6 @@ export const signInWithPasswordAction = actionClient
     if (error) {
       throw new Error(error.message);
     }
-  });
-
-const signInWithMagicLinkSchema = z.object({
-  email: z.string().email(),
-  next: z.string().optional(),
-});
-
-/**
- * Sends a magic link to the user's email for passwordless sign in.
- * @param {Object} params - The parameters for magic link sign in.
- * @param {string} params.email - The user's email address.
- * @param {string} [params.next] - The URL to redirect to after successful sign in.
- * @throws {Error} If there's an error sending the magic link.
- */
-export const signInWithMagicLinkAction = actionClient
-  .schema(signInWithMagicLinkSchema)
-  .action(async ({ parsedInput: { email, next } }) => {
-    const supabase = await createSupabaseClient();
-    const redirectUrl = new URL(toSiteURL('/auth/callback'));
-    if (next) {
-      redirectUrl.searchParams.set('next', next);
-    }
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectUrl.toString(),
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-  });
-
-const signInWithProviderSchema = z.object({
-  provider: z.enum(['google', 'github', 'twitter']),
-  next: z.string().optional(),
-});
-
-/**
- * Initiates OAuth sign in with a specified provider.
- * @param {Object} params - The parameters for OAuth sign in.
- * @param {('google'|'github'|'twitter')} params.provider - The OAuth provider.
- * @param {string} [params.next] - The URL to redirect to after successful sign in.
- * @returns {Promise<{url: string}>} The URL to redirect the user to for OAuth sign in.
- * @throws {Error} If there's an error initiating OAuth sign in.
- */
-export const signInWithProviderAction = actionClient
-  .schema(signInWithProviderSchema)
-  .action(async ({ parsedInput: { provider, next } }) => {
-    const supabase = await createSupabaseClient();
-    const redirectToURL = new URL(toSiteURL('/auth/callback'));
-    if (next) {
-      redirectToURL.searchParams.set('next', next);
-    }
-    const { error, data } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: redirectToURL.toString(),
-      },
-    });
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    return { url: data.url };
   });
 
 const resetPasswordSchema = z.object({
