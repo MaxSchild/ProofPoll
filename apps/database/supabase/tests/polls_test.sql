@@ -426,7 +426,7 @@ SELECT throws_ok(
   'nobody can delete an answer, not even the database owner'
 );
 SELECT throws_ok(
-  $$TRUNCATE public.responses$$,
+  $$TRUNCATE public.responses CASCADE$$,
   '23514',
   'Answers cannot be deleted',
   'the answers table cannot be truncated'
