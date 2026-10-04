@@ -5,8 +5,10 @@ autoInstallPeers: true
 minimumReleaseAge: 4320
 allowBuilds:
   '@parcel/watcher': true
+  bufferutil: false
   core-js: true
   esbuild: true
   msgpackr-extract: true
   sharp: true
   supabase: true
+  utf-8-validate: false

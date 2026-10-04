@@ -51,13 +51,17 @@ export function DraftActions({ id, title }: { id: string; title: string }) {
       <ConfirmActionDialog
         trigger={<Button>Open for answers</Button>}
         title={`Open "${title}" for answers?`}
-        description="The plan, questions and rules can't be changed after this. Participants will be able to answer straight away."
+        description="The plan, questions and rules can't be changed after this. Their fingerprint is registered on Solana, and participants can answer straight away."
         cancelLabel="Keep editing"
         confirmLabel="Open for answers"
         onConfirm={async () => {
-          const message = errorOf(await openPollAction({ id }));
+          const result = await openPollAction({ id });
+          const message = errorOf(result);
           if (!message) {
-            toast.success('Poll opened');
+            const record = result?.data?.record.status;
+            if (record === 'recorded') toast.success('Poll opened and plan registered on Solana');
+            else if (record === 'disabled') toast.success('Poll opened');
+            else toast.warning('Poll opened. The plan is not on Solana yet: retry from the Record tab.');
             router.refresh();
           }
           return message;

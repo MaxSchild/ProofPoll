@@ -1,5 +1,6 @@
 'use server';
 
+import { recordAnswer } from '@/data/admin/records';
 import { actionClient } from '@/lib/safe-action';
 import { createSupabaseClient } from '@/supabase-clients/server';
 import { toUserError } from '@/utils/db-errors';
@@ -12,6 +13,10 @@ import { submitResponseSchema } from '@/utils/zod-schemas/answer';
  * ("This poll is not accepting answers") are shown to the participant.
  * The researcher's pages read the count fresh on every visit, so nothing is
  * revalidated here.
+ *
+ * Once saved, the answer's fingerprint is recorded on Solana before the
+ * receipt is shown (about a second on devnet). If that fails the answer is
+ * still saved; the record's status tells the receipt what to say.
  */
 export const submitResponseAction = actionClient
   .schema(submitResponseSchema)
@@ -34,9 +39,11 @@ export const submitResponseAction = actionClient
         "Your answer wasn't saved. Check your connection and try again."
       );
     }
+    const record = await recordAnswer(response.id);
     return {
       id: response.id,
       seq: response.seq,
       createdAt: response.created_at,
+      record,
     };
   });

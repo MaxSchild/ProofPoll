@@ -1,10 +1,11 @@
 'use client';
 
-import { Check } from 'lucide-react';
+import { Check, ExternalLink } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { formatCountdown, LAB_RESET_SECONDS } from '@/utils/answers';
+import { formatCountdown, LAB_RESET_SECONDS, type ReceiptRecordStatus } from '@/utils/answers';
+import { explorerTxUrl } from '@/utils/fingerprints';
 
 function formatLocalTime(iso: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -16,6 +17,8 @@ function formatLocalTime(iso: string): string {
 interface ReceiptProps {
   seq: number;
   createdAt: string;
+  recordTx: string | null;
+  recordStatus: ReceiptRecordStatus | null;
   /** True when the receipt is shown again because this device already answered. */
   alreadyAnswered: boolean;
   lab: boolean;
@@ -30,6 +33,8 @@ interface ReceiptProps {
 export function Receipt({
   seq,
   createdAt,
+  recordTx,
+  recordStatus,
   alreadyAnswered,
   lab,
   onNextParticipant,
@@ -64,16 +69,43 @@ export function Receipt({
           </time>
           .
         </p>
-        {/*
-          Phase 2 slots, intentionally empty in phase 1:
-          - "Recorded on Solana: view record" (link to the transaction)
-          - "Only a fingerprint was recorded, not your answer."
-        */}
+        <RecordLine tx={recordTx} status={recordStatus} />
         {alreadyAnswered ? (
           <p className="text-sm text-muted-foreground">You already answered on this device.</p>
         ) : null}
       </div>
       {lab ? <LabReset onNextParticipant={onNextParticipant} /> : null}
+    </div>
+  );
+}
+
+function RecordLine({ tx, status }: { tx: string | null; status: ReceiptRecordStatus | null }) {
+  if (status === null || status === 'disabled') return null;
+  if (status === 'failed' || !tx) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Your answer is saved. Its record on Solana will be added shortly.
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-1">
+      <p className="text-base">
+        {status === 'recorded' ? 'Recorded on Solana: ' : 'Being recorded on Solana: '}
+        <a
+          href={explorerTxUrl(tx)}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 font-medium text-primary underline underline-offset-4"
+        >
+          view record
+          <ExternalLink className="size-3.5" aria-hidden="true" />
+          <span className="sr-only">(opens Solana Explorer in a new tab)</span>
+        </a>
+      </p>
+      <p className="text-sm text-muted-foreground">
+        Only a fingerprint was recorded, not your answer.
+      </p>
     </div>
   );
 }

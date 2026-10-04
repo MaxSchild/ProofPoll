@@ -16,10 +16,17 @@ export function formatCountdown(secondsLeft: number): string {
   return `Next participant in ${Math.max(0, Math.ceil(secondsLeft))} s`;
 }
 
+export type ReceiptRecordStatus = 'recorded' | 'pending' | 'failed' | 'disabled';
+
 export interface StoredReceipt {
   seq: number;
   createdAt: string;
+  /** The answer's record on Solana; absent for receipts saved before it. */
+  recordTx?: string | null;
+  recordStatus?: ReceiptRecordStatus;
 }
+
+const RECORD_STATUSES: readonly string[] = ['recorded', 'pending', 'failed', 'disabled'];
 
 export const LAB_RESET_SECONDS = 15;
 
@@ -33,10 +40,17 @@ export function parseStoredReceipt(raw: string | null): StoredReceipt | null {
   try {
     const value: unknown = JSON.parse(raw);
     if (typeof value !== 'object' || value === null) return null;
-    const { seq, createdAt } = value as Record<string, unknown>;
+    const { seq, createdAt, recordTx, recordStatus } = value as Record<string, unknown>;
     if (typeof seq !== 'number' || !Number.isInteger(seq) || seq < 1) return null;
     if (typeof createdAt !== 'string' || Number.isNaN(Date.parse(createdAt))) return null;
-    return { seq, createdAt };
+    const receipt: StoredReceipt = { seq, createdAt };
+    if (typeof recordTx === 'string' && /^[1-9A-HJ-NP-Za-km-z]{32,90}$/.test(recordTx)) {
+      receipt.recordTx = recordTx;
+    }
+    if (typeof recordStatus === 'string' && RECORD_STATUSES.includes(recordStatus)) {
+      receipt.recordStatus = recordStatus as ReceiptRecordStatus;
+    }
+    return receipt;
   } catch {
     return null;
   }
