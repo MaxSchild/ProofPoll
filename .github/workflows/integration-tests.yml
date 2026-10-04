@@ -16,7 +16,7 @@ jobs:
     name: Playwright e2e
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    if: ${{ github.repository == 'MaxSchild/allcounted' }}
+    if: ${{ github.repository == 'MaxSchild/ProofPoll' }}
     env:
       PORT: 3100
       NODE_ENV: test
