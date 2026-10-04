@@ -37,7 +37,7 @@ test.describe('Logged-in user shares a poll and reads its results', () => {
 
     const download = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Download PNG' }).click();
-    expect((await download).suggestedFilename()).toBe(`allcounted-${id}-qr.png`);
+    expect((await download).suggestedFilename()).toBe(`proofpoll-${id}-qr.png`);
 
     // Results before any answers.
     await page.getByRole('tab', { name: 'Results' }).click();
@@ -75,7 +75,7 @@ test.describe('Logged-in user shares a poll and reads its results', () => {
     const csvDownload = page.waitForEvent('download');
     await page.getByRole('link', { name: 'Download CSV' }).click();
     const file = await csvDownload;
-    expect(file.suggestedFilename()).toBe(`allcounted-${id}.csv`);
+    expect(file.suggestedFilename()).toBe(`proofpoll-${id}.csv`);
     const path = await file.path();
     const { readFile } = await import('node:fs/promises');
     const lines = (await readFile(path, 'utf8')).trim().split(/\r\n/);

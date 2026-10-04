@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { PRODUCT_NAME } from '@/constants';
 
 export default function PollNotFound() {
   return (
@@ -11,7 +12,7 @@ export default function PollNotFound() {
           Check the link or ask the person who shared it for a new one.
         </p>
         <Button asChild variant="outline" className="mt-2">
-          <Link href="/">Go to AllCounted</Link>
+          <Link href="/">Go to {PRODUCT_NAME}</Link>
         </Button>
       </div>
     </div>

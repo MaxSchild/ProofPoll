@@ -12,6 +12,7 @@ import {
   ItemMedia,
   ItemTitle,
 } from '@/components/ui/item';
+import { PRODUCT_NAME, PRODUCT_TAGLINE } from '@/constants';
 
 const benefits = [
   'Register your plan before the first answer',
@@ -24,7 +25,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex min-h-svh flex-col">
         <header className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" aria-label="AllCounted home">
+          <Link href="/" aria-label={`${PRODUCT_NAME} home`}>
             <Brand />
           </Link>
           <ModeToggle />
@@ -33,7 +34,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           <div className="w-full max-w-md">{children}</div>
         </main>
         <footer className="px-6 py-5 text-center text-xs text-muted-foreground">
-          Every answer, counted.
+          {PRODUCT_TAGLINE}
         </footer>
       </div>
 

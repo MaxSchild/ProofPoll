@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { getCachedLoggedInVerifiedSupabaseUser } from '@/rsc-data/supabase';
 import { AppSidebarContent } from './app-sidebar-client';
+import { PRODUCT_NAME } from '@/constants';
 
 async function SidebarHeaderContent() {
   'use cache';
@@ -19,7 +20,7 @@ async function SidebarHeaderContent() {
     <SidebarHeader>
       <SidebarMenu>
         <SidebarMenuItem>
-          <SidebarMenuButton size="lg" asChild tooltip="AllCounted home">
+          <SidebarMenuButton size="lg" asChild tooltip={`${PRODUCT_NAME} home`}>
             <Link href="/">
               <Brand showTagline />
             </Link>

@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { AuthCard } from '@/components/Auth/AuthCard';
 import { Password } from '@/components/Auth/Password';
 import { updatePasswordAction } from '@/data/user/security';
+import { PRODUCT_NAME } from '@/constants';
 
 export function UpdatePassword() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export function UpdatePassword() {
   return (
     <AuthCard
       title="Create a new password"
-      description="Choose a secure password for your AllCounted account."
+      description={`Choose a secure password for your ${PRODUCT_NAME} account.`}
       icon={<ShieldCheck aria-hidden="true" />}
     >
       <Password

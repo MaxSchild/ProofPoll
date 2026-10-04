@@ -11,6 +11,7 @@ import { EmailAndPassword } from '@/components/Auth/EmailAndPassword';
 import { RedirectingPleaseWaitCard } from '@/components/Auth/RedirectingPleaseWaitCard';
 import { Button } from '@/components/ui/button';
 import { signInWithPasswordAction } from '@/data/auth/auth';
+import { PRODUCT_NAME } from '@/constants';
 
 export function Login({ next }: { next?: string }) {
   const [redirectInProgress, setRedirectInProgress] = useState(false);
@@ -53,11 +54,11 @@ export function Login({ next }: { next?: string }) {
 
   return (
     <AuthCard
-      title="Sign in to AllCounted"
+      title={`Sign in to ${PRODUCT_NAME}`}
       description="Sign in with your email and password."
       footer={
         <p className="w-full text-center text-sm text-muted-foreground">
-          New to AllCounted?{' '}
+          New to {PRODUCT_NAME}?{' '}
           <Button variant="link" className="h-auto px-0" asChild>
             <Link href="/sign-up">Create an account</Link>
           </Button>

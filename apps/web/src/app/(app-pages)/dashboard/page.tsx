@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { DashboardHeading } from './dashboard-heading';
 import { PollList, PollListSkeleton } from './poll-list';
 
-export const metadata: Metadata = { title: 'Your polls · AllCounted' };
+export const metadata: Metadata = { title: 'Your polls' };
 
 export default function DashboardPage() {
   return (

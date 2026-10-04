@@ -4,7 +4,7 @@
 // Solana like any other, and no service keys are needed.
 //
 // Usage (from apps/web):
-//   BASE_URL=https://allcounted.vercel.app \
+//   BASE_URL=https://proofpoll.vercel.app \
 //   DEMO_EMAIL=... DEMO_PASSWORD=... node scripts/seed-demo.mjs
 //
 // It signs up the demo researcher (or signs in if the account exists) and
@@ -19,7 +19,7 @@ const PASSWORD = process.env.DEMO_PASSWORD;
 const PARALLEL = Number(process.env.PARALLEL ?? 1);
 if (!EMAIL || !PASSWORD) throw new Error('Set DEMO_EMAIL and DEMO_PASSWORD');
 
-const AUTHOR = { name: 'Demo Researcher', affiliation: 'AllCounted example' };
+const AUTHOR = { name: 'Demo Researcher', affiliation: 'ProofPoll example' };
 
 /** Expands {option: count} per question into one answer per participant. */
 function participants(n, columns) {
@@ -43,7 +43,7 @@ const STUDIES = [
     poll: {
       title: 'Willingness to pay for reusable coffee cups',
       plan:
-        'Example study for the AllCounted demo. Students on campus are asked whether they would pay more for coffee in a reusable cup. Planned: 100 participants, recruited by QR code in the cafeteria.',
+        'Example study for the ProofPoll demo. Students on campus are asked whether they would pay more for coffee in a reusable cup. Planned: 100 participants, recruited by QR code in the cafeteria.',
       plannedN: 100,
       questions: [
         {
@@ -69,7 +69,7 @@ const STUDIES = [
     ]),
     paper: {
       title: 'Students will pay for reusable cups: evidence from a campus survey',
-      doi: '10.5555/allcounted.example.cups',
+      doi: '10.5555/proofpoll.example.cups',
       // The paper reports what the record shows: consistent.
       reportedN: null,
       resultsPublic: true,
@@ -79,7 +79,7 @@ const STUDIES = [
     poll: {
       title: 'Remote work and weekly working hours',
       plan:
-        'Example study for the AllCounted demo. Employees report how many days a week they work from home. Planned: 40 participants.',
+        'Example study for the ProofPoll demo. Employees report how many days a week they work from home. Planned: 40 participants.',
       plannedN: 40,
       questions: [
         {
@@ -100,7 +100,7 @@ const STUDIES = [
     ]),
     paper: {
       title: 'Working from home does not reduce working hours',
-      doi: '10.5555/allcounted.example.remote',
+      doi: '10.5555/proofpoll.example.remote',
       // 40 recorded, the rule excludes 3, but the paper reports only 30:
       // 7 answers unaccounted for, so the verdict is inconsistent.
       reportedN: '30',

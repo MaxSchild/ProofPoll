@@ -6,7 +6,7 @@ import { getPoll } from '@/data/user/poll-queries';
 import { pollToFormValues } from '@/utils/polls';
 import { PollForm } from '../../_components/poll-form';
 
-export const metadata: Metadata = { title: 'Edit poll · AllCounted' };
+export const metadata: Metadata = { title: 'Edit poll' };
 
 export default async function EditPollPage({
   params,

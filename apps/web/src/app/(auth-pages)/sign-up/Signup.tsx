@@ -11,6 +11,7 @@ import { EmailAndPassword } from '@/components/Auth/EmailAndPassword';
 import { EmailConfirmationPendingCard } from '@/components/Auth/EmailConfirmationPendingCard';
 import { Button } from '@/components/ui/button';
 import { signUpAction } from '@/data/auth/auth';
+import { PRODUCT_NAME } from '@/constants';
 
 interface SignUpProps {
   next?: string;
@@ -58,7 +59,7 @@ export function SignUp({ next }: SignUpProps) {
 
   return (
     <AuthCard
-      title="Create your AllCounted account"
+      title={`Create your ${PRODUCT_NAME} account`}
       description="Create your account and start with a secure, working foundation."
       footer={
         <p className="w-full text-center text-sm text-muted-foreground">

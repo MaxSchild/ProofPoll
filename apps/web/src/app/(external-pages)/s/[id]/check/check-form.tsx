@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { checkDatasetAction, type DatasetCheckResult, type RowResult } from '@/data/anon/records';
+import { PRODUCT_NAME } from '@/constants';
 
 const ROW_LABELS: Record<RowResult, string> = {
   ok: 'Matches',
@@ -62,7 +63,7 @@ export function CheckForm({ pollId, questionIds }: { pollId: string; questionIds
               {id}
             </code>
           ))}
-          as in the CSV AllCounted exports. Other columns are ignored.
+          as in the CSV {PRODUCT_NAME} exports. Other columns are ignored.
         </p>
         <Button type="submit" disabled={busy}>
           {busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : null}

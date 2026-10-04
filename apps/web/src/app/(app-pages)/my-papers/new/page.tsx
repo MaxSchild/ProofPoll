@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getSelectablePolls } from '@/data/user/paper-queries';
 import { PaperForm } from '../_components/paper-form';
 
-export const metadata: Metadata = { title: 'New paper · AllCounted' };
+export const metadata: Metadata = { title: 'New paper' };
 
 async function NewPaperForm() {
   const polls = await getSelectablePolls(null);

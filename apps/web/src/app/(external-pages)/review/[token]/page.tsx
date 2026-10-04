@@ -9,11 +9,12 @@ import { StudyRecord } from '@/components/verification/study-record';
 import { getReviewVersion } from '@/data/anon/paper-queries';
 import { formatDateTime } from '@/utils/format';
 import { anonymousAuthors } from '@/utils/verification';
+import { PRODUCT_NAME } from '@/constants';
 
 // Unlisted: only people with the link can open it, and search engines are
 // asked to stay away.
 export const metadata: Metadata = {
-  title: 'Review copy · AllCounted',
+  title: 'Review copy',
   robots: { index: false, follow: false },
 };
 
@@ -32,7 +33,7 @@ async function Review({ params }: { params: Promise<{ token: string }> }) {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{review.title}</h1>
         <p className="text-muted-foreground">Authors: {anonymousAuthors(review.authorCount)}</p>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          AllCounted recorded every answer to the studies below as it arrived. The numbers the
+          {PRODUCT_NAME} recorded every answer to the studies below as it arrived. The numbers the
           manuscript reports were confirmed by the authors on{' '}
           <time dateTime={review.confirmedAt}>{formatDateTime(review.confirmedAt)}</time> and
           checked against that record. Only totals are shown, never individual answers.

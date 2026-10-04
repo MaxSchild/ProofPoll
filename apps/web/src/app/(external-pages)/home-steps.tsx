@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { PRODUCT_NAME } from '@/constants';
 
 export interface HomeStep {
   title: string;
@@ -16,7 +17,7 @@ export function HomeSteps({ steps }: HomeStepsProps) {
         <div className="mb-10 max-w-2xl">
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">How it works</h2>
           <p className="mt-3 text-base leading-7 text-muted-foreground">
-            Researchers can already register their study plan in advance. AllCounted
+            Researchers can already register their study plan in advance. {PRODUCT_NAME}
             also records the answers as they come in.
           </p>
         </div>
